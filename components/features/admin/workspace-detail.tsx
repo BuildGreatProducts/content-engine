@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import {
   ArrowLeft,
   Send,
@@ -23,13 +24,10 @@ import {
 type AddMethod = "create" | "invite";
 
 export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
-  const workspace = useQuery(api.workspaces.getById, {
-    id: workspaceId as Id<"workspaces">,
-  });
-  const invitations = useQuery(api.invitations.listByWorkspace, {
-    workspaceId: workspaceId as Id<"workspaces">,
-  });
-  const clients = useQuery(api.users.listClients);
+  const wsId = workspaceId as Id<"workspaces">;
+  const workspace = useQuery(api.workspaces.getById, { id: wsId });
+  const invitations = useQuery(api.invitations.listByWorkspace, { workspaceId: wsId });
+  const clients = useQuery(api.users.listClients, { workspaceId: wsId });
 
   const sendInvitation = useAction(api.invitations.send);
   const createClient = useAction(api.invitations.createClient);
@@ -47,10 +45,6 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
   const [clientEmail, setClientEmail] = useState("");
   const [clientPassword, setClientPassword] = useState("");
 
-  const workspaceClients = (clients ?? []).filter(
-    (c) => c.workspaceName === workspace?.name
-  );
-
   const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
@@ -59,7 +53,7 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
     setIsSubmitting(true);
     try {
       await sendInvitation({
-        workspaceId: workspaceId as Id<"workspaces">,
+        workspaceId: wsId,
         email: inviteEmail.trim(),
       });
       toast("Invitation sent", "success");
@@ -86,7 +80,7 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
     setIsSubmitting(true);
     try {
       await createClient({
-        workspaceId: workspaceId as Id<"workspaces">,
+        workspaceId: wsId,
         email: clientEmail.trim(),
         password: clientPassword,
         name: clientName.trim(),
@@ -124,16 +118,18 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
     );
   }
 
+  const clientList = clients ?? [];
+
   return (
     <div className="flex flex-col gap-[var(--space-6)]">
       {/* Header */}
       <div className="flex items-center gap-[var(--space-3)]">
-        <a
+        <Link
           href="/admin/workspaces"
           className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
         >
           <ArrowLeft size={20} />
-        </a>
+        </Link>
         <div>
           <h1 className="text-[var(--text-2xl)] font-semibold text-[var(--color-text-primary)]">
             {workspace.name}
@@ -276,13 +272,13 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
       </Card>
 
       {/* Current Clients */}
-      {workspaceClients && workspaceClients.length > 0 && (
+      {clientList.length > 0 && (
         <Card>
           <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
             Clients
           </h2>
           <div className="flex flex-col gap-[var(--space-2)]">
-            {workspaceClients.map((client) => (
+            {clientList.map((client) => (
               <div
                 key={client._id}
                 className="flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] bg-[var(--color-surface-2)] border border-[var(--color-border)]"

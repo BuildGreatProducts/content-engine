@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
@@ -28,6 +28,7 @@ export function WorkspaceForm() {
   const createWorkspace = useMutation(api.workspaces.create);
   const { toast } = useToast();
   const [serverError, setServerError] = useState("");
+  const slugManuallyEdited = useRef(false);
 
   const {
     register,
@@ -43,7 +44,9 @@ export function WorkspaceForm() {
   const nameValue = watch("name");
 
   useEffect(() => {
-    setValue("slug", slugify(nameValue));
+    if (!slugManuallyEdited.current) {
+      setValue("slug", slugify(nameValue));
+    }
   }, [nameValue, setValue]);
 
   const onSubmit = async (data: WorkspaceFormData) => {
@@ -95,7 +98,12 @@ export function WorkspaceForm() {
           >
             Slug
           </label>
-          <Input id="slug" placeholder="acme-corp" {...register("slug")} />
+          <Input
+            id="slug"
+            placeholder="acme-corp"
+            {...register("slug")}
+            onKeyDown={() => { slugManuallyEdited.current = true; }}
+          />
           {errors.slug && (
             <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
               {errors.slug.message}

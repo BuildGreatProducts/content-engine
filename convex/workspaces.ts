@@ -5,12 +5,16 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAdmin, requireAdminQuery } from "./helpers";
 
 function slugify(name: string): string {
-  return name
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+  if (!slug) {
+    throw new ConvexError("Name must contain at least one letter or number.");
+  }
+  return slug;
 }
 
 export const list = query({

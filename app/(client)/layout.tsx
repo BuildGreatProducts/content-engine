@@ -1,5 +1,3 @@
-"use client";
-
 import { ReactNode } from "react";
 import { WorkspaceSidebar } from "@/components/features/workspace/workspace-sidebar";
 

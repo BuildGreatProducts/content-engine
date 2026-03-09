@@ -9,9 +9,11 @@ export const insertClientRecords = internalMutation({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, { email, name, hashedPassword, workspaceId }) => {
+    const normalizedEmail = email.trim().toLowerCase();
+
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
       .first();
     if (existing) {
       throw new Error("A user with this email already exists.");
@@ -19,7 +21,7 @@ export const insertClientRecords = internalMutation({
 
     const userId = await ctx.db.insert("users", {
       name,
-      email,
+      email: normalizedEmail,
       role: "client",
       workspaceId,
       createdAt: Date.now(),
@@ -28,7 +30,7 @@ export const insertClientRecords = internalMutation({
     await ctx.db.insert("authAccounts", {
       userId,
       provider: "password",
-      providerAccountId: email,
+      providerAccountId: normalizedEmail,
       secret: hashedPassword,
     });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +36,8 @@ export function SetupForm() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signedUp, setSignedUp] = useState(false);
+  const [promotionFailed, setPromotionFailed] = useState(false);
+  const hasPromotedRef = useRef(false);
 
   const {
     register,
@@ -45,19 +47,27 @@ export function SetupForm() {
     resolver: zodResolver(setupSchema),
   });
 
+  const handlePromoteToAdmin = async () => {
+    setError("");
+    setIsSubmitting(true);
+    setPromotionFailed(false);
+    try {
+      await promoteToAdmin({});
+      router.replace("/admin/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to set up admin account.");
+      setPromotionFailed(true);
+      setIsSubmitting(false);
+    }
+  };
+
   // After sign-up, once auth is established, promote to admin
   useEffect(() => {
-    if (signedUp && user) {
-      promoteToAdmin({})
-        .then(() => {
-          router.replace("/admin/dashboard");
-        })
-        .catch((err) => {
-          setError(err instanceof Error ? err.message : "Failed to set up admin account.");
-          setIsSubmitting(false);
-        });
+    if (signedUp && user && !hasPromotedRef.current) {
+      hasPromotedRef.current = true;
+      handlePromoteToAdmin();
     }
-  }, [signedUp, user, promoteToAdmin, router]);
+  }, [signedUp, user]);
 
   // Admin already exists — redirect to login
   if (hasAdmin === true) {
@@ -69,9 +79,9 @@ export function SetupForm() {
         <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-4)]">
           An admin account already exists.
         </p>
-        <a href="/login">
-          <Button variant="secondary">Go to Login</Button>
-        </a>
+        <Button variant="secondary" onClick={() => router.push("/login")}>
+          Go to Login
+        </Button>
       </Card>
     );
   }
@@ -184,9 +194,15 @@ export function SetupForm() {
           <p className="text-[var(--text-sm)] text-[var(--color-error)]">{error}</p>
         )}
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Setting up..." : "Create Admin Account"}
-        </Button>
+        {promotionFailed ? (
+          <Button type="button" onClick={handlePromoteToAdmin} disabled={isSubmitting}>
+            {isSubmitting ? "Retrying..." : "Retry Admin Setup"}
+          </Button>
+        ) : (
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Setting up..." : "Create Admin Account"}
+          </Button>
+        )}
       </form>
     </Card>
   );

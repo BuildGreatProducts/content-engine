@@ -39,7 +39,16 @@ export const seedAdmin = internalMutation({
     email: v.string(),
     name: v.string(),
   },
-  handler: async (ctx, { email, name }) => {
+  handler: async (ctx, { email }) => {
+    // Guard: don't allow multiple admins
+    const existingAdmin = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("role"), "admin"))
+      .first();
+    if (existingAdmin) {
+      return { action: "skipped", message: "Admin already exists." };
+    }
+
     const existing = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", email))

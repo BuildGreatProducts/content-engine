@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +29,7 @@ export function AcceptInviteForm() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signedUp, setSignedUp] = useState(false);
+  const hasAcceptedRef = useRef(false);
 
   const {
     register,
@@ -40,12 +41,14 @@ export function AcceptInviteForm() {
 
   // After sign-up, once auth is established, accept the invitation
   useEffect(() => {
-    if (signedUp && user) {
+    if (signedUp && user && !hasAcceptedRef.current) {
+      hasAcceptedRef.current = true;
       acceptInvite({ token })
         .then(() => {
           router.replace("/dashboard");
         })
         .catch(() => {
+          hasAcceptedRef.current = false;
           setError("Failed to accept invitation. Please try again.");
           setIsSubmitting(false);
         });

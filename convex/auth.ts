@@ -10,17 +10,16 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           name: (params.name as string) || "",
           role: "client" as const,
           createdAt: Date.now(),
+          lastActiveAt: Date.now(),
         };
       },
     }),
   ],
   callbacks: {
-    async afterUserCreatedOrUpdated(ctx, { userId, existingUserId }) {
-      if (existingUserId) {
-        await ctx.db.patch(userId, {
-          lastActiveAt: Date.now(),
-        });
-      }
+    async afterUserCreatedOrUpdated(ctx, { userId }) {
+      await ctx.db.patch(userId, {
+        lastActiveAt: Date.now(),
+      });
     },
   },
 });

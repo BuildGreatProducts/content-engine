@@ -11,6 +11,7 @@ export function WorkspaceHeader({ onMenuClick }: WorkspaceHeaderProps) {
     <header className="md:hidden flex items-center h-14 px-4 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <button
         onClick={onMenuClick}
+        aria-label="Open workspace menu"
         className="p-2 rounded-[var(--radius-md)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)]"
       >
         <Menu size={18} />

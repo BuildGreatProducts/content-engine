@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card } from "@/components/ui/card";
@@ -9,8 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function WorkspaceList() {
   const workspaces = useQuery(api.workspaces.listWithStats);
+  const router = useRouter();
 
-  if (workspaces === undefined || workspaces === null) {
+  if (workspaces === undefined) {
     return (
       <div className="flex flex-col gap-[var(--space-3)]">
         {[1, 2, 3].map((i) => (
@@ -18,6 +20,10 @@ export function WorkspaceList() {
         ))}
       </div>
     );
+  }
+
+  if (workspaces === null) {
+    return null;
   }
 
   if (workspaces.length === 0) {
@@ -73,26 +79,29 @@ export function WorkspaceList() {
                 </Badge>
               </td>
               <td className="px-4 py-3 hidden lg:table-cell">
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5" role="list" aria-label="Document status">
                   {ws.documentStatus.map((doc) => (
                     <div
                       key={doc.type}
+                      role="listitem"
                       className={`w-2.5 h-2.5 rounded-full ${
                         doc.uploaded
                           ? "bg-[var(--color-success)]"
                           : "bg-[var(--color-border)]"
                       }`}
-                      title={doc.type.replace(/_/g, " ")}
+                      aria-label={`${doc.type.replace(/_/g, " ")}: ${doc.uploaded ? "uploaded" : "missing"}`}
                     />
                   ))}
                 </div>
               </td>
               <td className="px-4 py-3 text-right">
-                <a href={`/admin/workspaces/${ws._id}`}>
-                  <Button size="sm" variant="secondary">
-                    View
-                  </Button>
-                </a>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => router.push(`/admin/workspaces/${ws._id}`)}
+                >
+                  View
+                </Button>
               </td>
             </tr>
           ))}

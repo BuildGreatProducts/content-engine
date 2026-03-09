@@ -4,9 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Link from "next/link";
 import { LayoutDashboard, Building2, Users, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -14,19 +16,43 @@ const navItems = [
   { href: "/admin/clients", label: "Clients", icon: Users },
 ];
 
-export function AdminSidebar() {
-  const pathname = usePathname();
+export function AdminLayoutGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { signOut } = useAuthActions();
   const user = useQuery(api.users.me);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Role guard
   useEffect(() => {
     if (user !== undefined && (!user || user.role !== "admin")) {
       router.replace("/dashboard");
     }
   }, [user, router]);
+
+  if (user === undefined) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Skeleton className="h-8 w-48" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    return null;
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      <AdminSidebar />
+      <main className="flex-1 p-[var(--space-8)] md:p-[var(--space-8)] pt-16 md:pt-[var(--space-8)]">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+export function AdminSidebar() {
+  const pathname = usePathname();
+  const { signOut } = useAuthActions();
+  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -40,6 +66,7 @@ export function AdminSidebar() {
         <button
           className="md:hidden text-[var(--color-text-secondary)]"
           onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
         >
           <X size={18} />
         </button>
@@ -49,7 +76,7 @@ export function AdminSidebar() {
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
@@ -62,7 +89,7 @@ export function AdminSidebar() {
             >
               <item.icon size={16} />
               {item.label}
-            </a>
+            </Link>
           );
         })}
       </nav>
@@ -83,6 +110,9 @@ export function AdminSidebar() {
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[var(--radius-md)] bg-[var(--color-surface)] border border-[var(--color-border)]"
         onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+        aria-expanded={mobileOpen}
+        aria-controls="admin-sidebar-panel"
       >
         <Menu size={18} className="text-[var(--color-text-primary)]" />
       </button>
@@ -97,6 +127,9 @@ export function AdminSidebar() {
 
       {/* Mobile sidebar */}
       <aside
+        id="admin-sidebar-panel"
+        aria-hidden={!mobileOpen}
+        inert={!mobileOpen ? true : undefined}
         className={cn(
           "md:hidden fixed inset-y-0 left-0 z-50 w-60 bg-[var(--color-surface)] border-r border-[var(--color-border)] p-[var(--space-4)] transform transition-transform",
           mobileOpen ? "translate-x-0" : "-translate-x-full"

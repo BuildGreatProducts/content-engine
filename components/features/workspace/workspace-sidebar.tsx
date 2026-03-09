@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Link from "next/link";
 import { LayoutDashboard, BookOpen, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -34,6 +35,7 @@ export function WorkspaceSidebar() {
         <button
           className="md:hidden text-[var(--color-text-secondary)]"
           onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
         >
           <X size={18} />
         </button>
@@ -43,7 +45,7 @@ export function WorkspaceSidebar() {
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
@@ -56,7 +58,7 @@ export function WorkspaceSidebar() {
             >
               <item.icon size={16} />
               {item.label}
-            </a>
+            </Link>
           );
         })}
       </nav>
@@ -77,6 +79,9 @@ export function WorkspaceSidebar() {
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-[var(--radius-md)] bg-[var(--color-surface)] border border-[var(--color-border)]"
         onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+        aria-expanded={mobileOpen}
+        aria-controls="workspace-sidebar-panel"
       >
         <Menu size={18} className="text-[var(--color-text-primary)]" />
       </button>
@@ -91,6 +96,9 @@ export function WorkspaceSidebar() {
 
       {/* Mobile sidebar */}
       <aside
+        id="workspace-sidebar-panel"
+        aria-hidden={!mobileOpen}
+        inert={!mobileOpen ? true : undefined}
         className={cn(
           "md:hidden fixed inset-y-0 left-0 z-50 w-60 bg-[var(--color-surface)] border-r border-[var(--color-border)] p-[var(--space-4)] transform transition-transform",
           mobileOpen ? "translate-x-0" : "-translate-x-full"

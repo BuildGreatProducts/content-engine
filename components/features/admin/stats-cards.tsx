@@ -9,7 +9,7 @@ import { Building2, FileText, AlertCircle } from "lucide-react";
 export function StatsCards() {
   const workspaces = useQuery(api.workspaces.listWithStats);
 
-  if (workspaces === undefined || workspaces === null) {
+  if (workspaces === undefined) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--space-4)]">
         {[1, 2, 3].map((i) => (
@@ -17,6 +17,10 @@ export function StatsCards() {
         ))}
       </div>
     );
+  }
+
+  if (workspaces === null) {
+    return null;
   }
 
   const totalWorkspaces = workspaces.length;

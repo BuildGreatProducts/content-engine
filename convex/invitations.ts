@@ -2,14 +2,14 @@ import { query, mutation, internalMutation, internalQuery, action } from "./_gen
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { requireAdmin, requireAdminQuery } from "./helpers";
+import { requireAdminQuery } from "./helpers";
 import { internal } from "./_generated/api";
 
 export const _create = internalMutation({
   args: {
     workspaceId: v.id("workspaces"),
     email: v.string(),
-    tokenHash: v.string(),
+    token: v.string(),
     expiresAt: v.number(),
     createdBy: v.id("users"),
   },
@@ -17,7 +17,7 @@ export const _create = internalMutation({
     return ctx.db.insert("invitations", {
       workspaceId: args.workspaceId,
       email: args.email,
-      token: args.tokenHash,
+      token: args.token,
       expiresAt: args.expiresAt,
       createdBy: args.createdBy,
       createdAt: Date.now(),
@@ -52,7 +52,7 @@ export const send = action({
     await ctx.runMutation(internal.invitations._create, {
       workspaceId,
       email,
-      tokenHash: token,
+      token,
       expiresAt,
       createdBy: userId,
     });
@@ -121,6 +121,13 @@ export const accept = mutation({
     if (!invitation) throw new ConvexError("Invalid invitation");
     if (invitation.acceptedAt) throw new ConvexError("Invitation already accepted");
     if (invitation.expiresAt < Date.now()) throw new ConvexError("Invitation expired");
+
+    // Verify the authenticated user's email matches the invitation
+    const user = await ctx.db.get(userId);
+    if (!user) throw new ConvexError("User not found");
+    if (user.email.toLowerCase() !== invitation.email.toLowerCase()) {
+      throw new ConvexError("Invitation not for this user");
+    }
 
     // Update user with workspace and role
     await ctx.db.patch(userId, {
