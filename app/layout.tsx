@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({
     <ConvexAuthNextjsServerProvider>
       <html lang="en">
         <body className="antialiased">
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+          <ConvexClientProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ConvexClientProvider>
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>
