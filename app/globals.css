@@ -1,26 +1,94 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
+/* Design system color tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #0a0a0f;
+  --color-surface: #13131a;
+  --color-surface-2: #1c1c26;
+  --color-border: #2a2a38;
+  --color-border-focus: #4a4a64;
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #8888a0;
+  --color-accent: #6b5eff;
+  --color-accent-hover: #8678ff;
+  --color-success: #2dd4a0;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #60a5fa;
+
+  /* Typography tokens */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* Spacing tokens */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Radius, shadow, transition tokens */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --transition-fast: 100ms ease-out;
+  --transition-base: 150ms ease-out;
+  --transition-slow: 200ms ease-out;
 }
 
+/* Tailwind v4 theme extension */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-base: #0a0a0f;
+  --color-surface: #13131a;
+  --color-surface-2: #1c1c26;
+  --color-border: #2a2a38;
+  --color-border-focus: #4a4a64;
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #8888a0;
+  --color-accent: #6b5eff;
+  --color-accent-hover: #8678ff;
+  --color-success: #2dd4a0;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #60a5fa;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  --max-width-content: 720px;
+  --max-width-app: 1200px;
+
+  --spacing-18: 4.5rem;
+
+  --duration-fast: 100ms;
+  --duration-base: 150ms;
+  --duration-slow: 200ms;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
 }

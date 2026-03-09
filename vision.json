@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "createdAt": "2026-03-09T00:00:00Z",
+    "updatedAt": "2026-03-09T01:00:00Z",
+    "version": "1.0",
+    "plaidVersion": "1.0"
+  },
+  "creator": {
+    "name": "Lawrence",
+    "expertise": "Freelance copywriting and content strategy — 6 years freelance with agency experience before that, working across large household brands and small businesses",
+    "background": "Lawrence has been a freelance copywriter for 6 years, with agency experience prior to that. He's worked across the full spectrum — from large household brands to small businesses — with a portfolio including 100+ websites, 1000+ social media posts, 250+ blogs, and plenty more. He's built a proven copywriting framework and methodology over that time, and is now channelling that expertise into an AI-powered content system for his agency clients."
+  },
+  "purpose": {
+    "whoYouHelp": "Marketing people and content-responsible team members at growing companies with 5–50 employees who need to produce consistent, on-brand content",
+    "problemYouSolve": "Businesses trying to use AI for content creation get generic output that doesn't sound like their brand and requires as much editing as writing from scratch. Content production also falls apart entirely when things get busy — there's no reliable system.",
+    "desiredTransformation": "From AI content that sounds like everyone else, to on-brand copy that actually sounds like them — without needing to know how to prompt",
+    "whyYou": "Lawrence has spent 6 years writing copy for brands of all sizes — he's built the methodology, done the reps, and knows what makes content actually work. Content Engine is his framework and expertise, codified into a system any client can access."
+  },
+  "product": {
+    "name": "Content Engine",
+    "oneLiner": "Helping growing businesses create content that sounds like them and actually performs — using a proven system and custom AI tools.",
+    "howItWorks": "Lawrence creates a workspace for each client from his admin dashboard and sends them an invitation to join. When generating content, the AI draws on three layers of context: Lawrence's proprietary copywriting framework, client-specific content guidelines, and a tone of voice document — all markdown files managed by Lawrence from the admin dashboard. Clients select a content type, provide minimal input, and receive on-brand copy — no prompting required. For high-priority content types (website page copy and case studies), a UI message informs the client that Lawrence will personally review the content before it goes live. All generated content is saved to a library with copy-to-clipboard functionality. Lawrence oversees all clients, usage, and documents from a central admin dashboard.",
+    "keyCapabilities": [
+      "Client workspaces — dedicated environments for each agency client, created and managed by Lawrence from the admin dashboard with email-based client invitations",
+      "AI content generation across 7 content types: blog articles, email newsletters, website page copy, LinkedIn posts, Instagram posts, X posts, and case studies",
+      "Content library — a searchable archive of all generated content per client, with copy-to-clipboard functionality on every piece of content",
+      "Markdown-based guideline system — tone of voice, content guidelines, and Lawrence's copywriting framework passed to the AI at generation time, editable by Lawrence from the admin dashboard",
+      "Admin dashboard — Lawrence creates workspaces, invites clients, manages all guideline documents (tone of voice, content guidelines, copywriting framework), and oversees all client usage and generated content",
+      "High-priority content flagging — when a client selects website page copy or case studies, a UI message flags this as high-priority content that will be personally reviewed by Lawrence before use"
+    ],
+    "platform": "web",
+    "marketDifferentiation": "Unlike generic AI writing tools, Content Engine applies Lawrence's proven copywriting framework alongside each client's specific brand voice and tone of voice guidelines — meaning the output is shaped by expert copywriting judgment, not generic prompts. Clients don't need to know how to use AI.",
+    "magicMoment": "The first time a client generates a piece of content and it genuinely sounds like their brand — not generic AI filler — they realise they don't need to wrestle with prompts or spend hours editing. It just works."
+  },
+  "audience": {
+    "primaryUser": "A marketing person or content-responsible team member at a 5–50 person company. They know they need consistent content but are frustrated that AI tools like ChatGPT produce output that doesn't sound like their brand and requires as much editing as writing from scratch. Content often falls off their plate entirely when things get busy.",
+    "secondaryUsers": [
+      "Lawrence (agency admin) — oversees all client workspaces, monitors usage and content generation from the admin dashboard",
+      "Business owners at smaller companies who wear the marketing hat alongside other responsibilities"
+    ],
+    "currentAlternatives": "Generic AI tools like ChatGPT (output sounds nothing like their brand, requires heavy editing), freelancers and agencies (expensive, slow turnaround, constant briefing), or simply not producing content consistently",
+    "frustrations": "AI tools give generic output that takes as much time to edit as writing from scratch. The brand voice is never captured. When things get busy, content is the first thing to fall off. There's no system — just ad-hoc attempts that never build momentum."
+  },
+  "business": {
+    "revenueModel": "free",
+    "initialGoal": "Get 3–5 paying agency clients onboarded and actively using Content Engine as part of their retainer within 90 days",
+    "sixMonthVision": "10+ clients on the platform with Content Engine as a core pillar of every retainer package Lawrence sells",
+    "constraints": "No specific constraints provided",
+    "goToMarket": "Content Engine is positioned as an exclusive tool for Lawrence's agency clients, offered as part of a retainer package. The platform itself is a differentiator when winning new business — clients get access to a custom AI content tool built on Lawrence's proven copywriting framework."
+  },
+  "feeling": {
+    "brandPersonality": "Sharp and professional — confident and polished, like a tool built by experts. Expert-built credibility with a warm, friendly tone of voice that makes clients feel guided, not overwhelmed.",
+    "visualMood": "Dark and focused — dark UI with high contrast. The design keeps attention on the content, not the interface. Premium creative tool aesthetic.",
+    "toneOfVoice": "Warm and friendly but confident and clear. Guides without being condescending. Speaks plainly, celebrates progress, never uses jargon. The voice of an expert who also happens to be approachable.",
+    "antiPatterns": "Never feel like a generic SaaS dashboard — cold, corporate, interchangeable. Never feel like a toy or AI gimmick — this is a serious business tool built on expert methodology. Never feel overwhelming — clients should always know exactly where they are and what to do next."
+  },
+  "techStack": {
+    "appType": "web",
+    "frontend": {
+      "choice": "Next.js",
+      "rationale": "Modern React framework with excellent ecosystem, ideal for building a polished web app with Convex integration and easy Vercel deployment"
+    },
+    "backend": {
+      "choice": "Convex",
+      "rationale": "Handles backend, database, and authentication in one platform — zero infrastructure overhead, TypeScript end-to-end, real-time reactivity for live content updates"
+    },
+    "database": {
+      "choice": "Convex Database",
+      "rationale": "Included with Convex — reactive queries, automatic indexing, ACID transactions, ideal for real-time content updates across client workspaces"
+    },
+    "auth": {
+      "choice": "Convex Auth",
+      "rationale": "Authentication handled natively within Convex, keeping the stack consolidated and simple with no additional auth provider needed"
+    },
+    "payments": {
+      "choice": "",
+      "rationale": "No payments in the app — Content Engine is delivered as part of Lawrence's agency retainer, not sold directly through the platform"
+    }
+  },
+  "tooling": {
+    "codingAgent": "claude-code"
+  }
+}

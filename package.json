@@ -1,17 +1,29 @@
 {
-  "name": "content-engine-init",
+  "name": "content-engine",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@auth/core": "^0.37.4",
+    "@convex-dev/auth": "^0.0.91",
+    "@hookform/resolvers": "^5.2.2",
+    "clsx": "^2.1.1",
+    "convex": "^1.32.0",
+    "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.71.2",
+    "react-markdown": "^10.1.0",
+    "resend": "^6.9.3",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
