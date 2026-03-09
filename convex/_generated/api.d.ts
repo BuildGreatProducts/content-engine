@@ -8,9 +8,16 @@
  * @module
  */
 
+import type * as actions_createClient from "../actions/createClient.js";
+import type * as actions_sendInvitation from "../actions/sendInvitation.js";
 import type * as auth from "../auth.js";
+import type * as clientRecords from "../clientRecords.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
+import type * as invitations from "../invitations.js";
+import type * as seed from "../seed.js";
+import type * as users from "../users.js";
+import type * as workspaces from "../workspaces.js";
 
 import type {
   ApiFromModules,
@@ -19,9 +26,16 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/createClient": typeof actions_createClient;
+  "actions/sendInvitation": typeof actions_sendInvitation;
   auth: typeof auth;
+  clientRecords: typeof clientRecords;
   helpers: typeof helpers;
   http: typeof http;
+  invitations: typeof invitations;
+  seed: typeof seed;
+  users: typeof users;
+  workspaces: typeof workspaces;
 }>;
 
 /**

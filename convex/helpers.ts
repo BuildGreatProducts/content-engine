@@ -12,6 +12,18 @@ export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
   return user;
 }
 
+/**
+ * Like requireAdmin but returns null instead of throwing when not authenticated.
+ * Use this in queries that run before auth is established.
+ */
+export async function requireAdminQuery(ctx: QueryCtx) {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) return null;
+  const user = await ctx.db.get(userId);
+  if (!user || user.role !== "admin") return null;
+  return user;
+}
+
 export async function requireWorkspaceAccess(
   ctx: QueryCtx | MutationCtx,
   workspaceId: Id<"workspaces">
