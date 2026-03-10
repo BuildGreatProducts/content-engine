@@ -129,6 +129,18 @@ export const listByWorkspacePaginated = query({
   },
 });
 
+export const countByWorkspace = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, { workspaceId }) => {
+    await requireWorkspaceAccess(ctx, workspaceId);
+    const items = await ctx.db
+      .query("content")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .collect();
+    return items.length;
+  },
+});
+
 export const getById = query({
   args: { id: v.id("content") },
   handler: async (ctx, { id }) => {

@@ -189,7 +189,8 @@ export function isGenerationFailed(output: string): boolean {
 }
 
 export function getFailureMessage(output: string): string {
-  return output.replace(/^GENERATION_FAILED:\s*/, "");
+  if (!output.startsWith(GENERATION_FAILED_PREFIX)) return output;
+  return output.slice(GENERATION_FAILED_PREFIX.length).trimStart();
 }
 
 export function createBriefSchema(config: ContentTypeConfig) {

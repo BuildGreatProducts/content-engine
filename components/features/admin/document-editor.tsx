@@ -7,6 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import { Save, Check } from "lucide-react";
 
 const DOCUMENT_TYPES = [
@@ -31,39 +32,46 @@ function DocumentSection({
   const doc = useQuery(api.documents.getByType, { workspaceId, type });
   const upsert = useMutation(api.documents.upsert);
   const textareaId = useId();
+  const { toast } = useToast();
 
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const lastSavedContentRef = useRef("");
   const dirtyRef = useRef(false);
   const initializedRef = useRef(false);
 
   // Initialize from query, but don't overwrite dirty edits
   useEffect(() => {
     if (doc !== undefined && !dirtyRef.current) {
-      setContent(doc?.content ?? "");
+      const serverContent = doc?.content ?? "";
+      setContent(serverContent);
+      lastSavedContentRef.current = serverContent;
       initializedRef.current = true;
     }
   }, [doc]);
 
   const handleChange = (value: string) => {
-    if (!dirtyRef.current) {
-      dirtyRef.current = true;
-      onDirtyChange?.(true);
-    }
     setContent(value);
+    const isDirty = value !== lastSavedContentRef.current;
+    if (isDirty !== dirtyRef.current) {
+      dirtyRef.current = isDirty;
+      onDirtyChange?.(isDirty);
+    }
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await upsert({ workspaceId, type, title, content });
+      lastSavedContentRef.current = content;
       dirtyRef.current = false;
       onDirtyChange?.(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      console.error("Failed to save:", err);
+      const message = err instanceof Error ? err.message : "Failed to save document";
+      toast(message, "error");
     } finally {
       setSaving(false);
     }

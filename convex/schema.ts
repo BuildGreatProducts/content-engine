@@ -86,6 +86,7 @@ export default defineSchema({
     token: v.string(),
     expiresAt: v.number(),
     acceptedAt: v.optional(v.number()),
+    lastSentAt: v.optional(v.number()),
     createdBy: v.id("users"),
     createdAt: v.number(),
   })

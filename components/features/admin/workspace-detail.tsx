@@ -30,6 +30,7 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
   const workspace = useQuery(api.workspaces.getById, { id: wsId });
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const documentsDirtyRef = useRef(false);
+  const tabRefs = useRef<Map<Tab, HTMLButtonElement | null>>(new Map());
 
   const handleDocsDirtyChange = useCallback((dirty: boolean) => {
     documentsDirtyRef.current = dirty;
@@ -41,6 +42,24 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
       if (!confirmed) return;
     }
     setActiveTab(tab);
+    tabRefs.current.get(tab)?.focus();
+  };
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
+    let nextIndex: number | null = null;
+    if (e.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % TABS.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = TABS.length - 1;
+    }
+    if (nextIndex !== null) {
+      e.preventDefault();
+      handleTabChange(TABS[nextIndex].key);
+    }
   };
 
   if (workspace === undefined) {
@@ -90,13 +109,20 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
       </div>
 
       {/* Tab navigation */}
-      <div className="flex border-b border-[var(--color-border)]">
-        {TABS.map((tab) => (
+      <div className="flex border-b border-[var(--color-border)]" role="tablist" aria-label="Workspace sections">
+        {TABS.map((tab, index) => (
           <button
             key={tab.key}
+            id={`tab-${tab.key}`}
+            ref={(el) => { tabRefs.current.set(tab.key, el); }}
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            aria-controls={`${tab.key}-panel`}
+            tabIndex={activeTab === tab.key ? 0 : -1}
             onClick={() => handleTabChange(tab.key)}
+            onKeyDown={(e) => handleTabKeyDown(e, index)}
             className={cn(
-              "px-4 py-2.5 text-[var(--text-sm)] font-medium transition-colors cursor-pointer -mb-px",
+              "px-4 py-2.5 text-[var(--text-sm)] font-medium transition-colors cursor-pointer -mb-px outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
               activeTab === tab.key
                 ? "text-[var(--color-accent)] border-b-2 border-[var(--color-accent)]"
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
@@ -107,17 +133,36 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
         ))}
       </div>
 
-      {/* Tab content */}
-      {activeTab === "overview" && <OverviewTab workspaceId={wsId} workspace={workspace} />}
-      <div className={activeTab === "documents" ? "" : "hidden"}>
+      {/* Tab panels */}
+      <div
+        id="overview-panel"
+        role="tabpanel"
+        aria-labelledby="tab-overview"
+        hidden={activeTab !== "overview"}
+      >
+        {activeTab === "overview" && <OverviewTab workspaceId={wsId} workspace={workspace} />}
+      </div>
+      <div
+        id="documents-panel"
+        role="tabpanel"
+        aria-labelledby="tab-documents"
+        hidden={activeTab !== "documents"}
+      >
         <DocumentEditor workspaceId={wsId} onDirtyChange={handleDocsDirtyChange} />
       </div>
-      {activeTab === "invitations" && (
-        <div className="flex flex-col gap-[var(--space-6)]">
-          <InviteClientForm workspaceId={wsId} />
-          <InvitationList workspaceId={wsId} />
-        </div>
-      )}
+      <div
+        id="invitations-panel"
+        role="tabpanel"
+        aria-labelledby="tab-invitations"
+        hidden={activeTab !== "invitations"}
+      >
+        {activeTab === "invitations" && (
+          <div className="flex flex-col gap-[var(--space-6)]">
+            <InviteClientForm workspaceId={wsId} />
+            <InvitationList workspaceId={wsId} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -131,6 +176,7 @@ function OverviewTab({
 }) {
   const clients = useQuery(api.users.listClients, { workspaceId });
   const content = useQuery(api.content.listByWorkspace, { workspaceId });
+  const contentCount = useQuery(api.content.countByWorkspace, { workspaceId });
   const updateWorkspace = useMutation(api.workspaces.update);
   const { toast } = useToast();
 
@@ -153,9 +199,7 @@ function OverviewTab({
     }
   };
 
-  const clientList = clients ?? [];
-  const contentItems = content ?? [];
-  const recentContent = contentItems.slice(0, 5);
+  const recentContent = content ? content.slice(0, 5) : undefined;
 
   return (
     <div className="flex flex-col gap-[var(--space-6)]">
@@ -185,7 +229,9 @@ function OverviewTab({
                 Clients
               </p>
               <p className="text-[var(--text-sm)] text-[var(--color-text-primary)]">
-                {clientList.length}
+                {clients === undefined ? (
+                  <Skeleton className="h-5 w-8 inline-block" />
+                ) : clients === null ? "—" : clients.length}
               </p>
             </div>
             <div>
@@ -193,7 +239,9 @@ function OverviewTab({
                 Content Items
               </p>
               <p className="text-[var(--text-sm)] text-[var(--color-text-primary)]">
-                {contentItems.length}
+                {contentCount === undefined ? (
+                  <Skeleton className="h-5 w-8 inline-block" />
+                ) : contentCount}
               </p>
             </div>
             <div>
@@ -213,13 +261,24 @@ function OverviewTab({
       </Card>
 
       {/* Clients */}
-      {clientList.length > 0 && (
+      {clients === undefined ? (
         <Card>
           <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
             Clients
           </h2>
           <div className="flex flex-col gap-[var(--space-2)]">
-            {clientList.map((client) => (
+            {[1, 2].map((i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
+        </Card>
+      ) : clients !== null && clients.length > 0 ? (
+        <Card>
+          <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
+            Clients
+          </h2>
+          <div className="flex flex-col gap-[var(--space-2)]">
+            {clients.map((client) => (
               <div
                 key={client._id}
                 className="flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] bg-[var(--color-surface-2)] border border-[var(--color-border)]"
@@ -237,10 +296,21 @@ function OverviewTab({
             ))}
           </div>
         </Card>
-      )}
+      ) : null}
 
       {/* Recent content */}
-      {recentContent.length > 0 && (
+      {recentContent === undefined ? (
+        <Card>
+          <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
+            Recent Content
+          </h2>
+          <div className="flex flex-col gap-[var(--space-2)]">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        </Card>
+      ) : recentContent.length > 0 ? (
         <Card>
           <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
             Recent Content
@@ -276,7 +346,7 @@ function OverviewTab({
             })}
           </div>
         </Card>
-      )}
+      ) : null}
 
       {/* Toggle active modal */}
       <Modal open={showToggleModal} onClose={() => setShowToggleModal(false)}>

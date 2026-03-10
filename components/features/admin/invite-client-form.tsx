@@ -78,9 +78,10 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         Add Client
       </h2>
 
-      <div className="flex gap-1 p-1 bg-[var(--color-surface-2)] rounded-[var(--radius-md)] mb-[var(--space-4)] w-fit">
+      <div className="flex gap-1 p-1 bg-[var(--color-surface-2)] rounded-[var(--radius-md)] mb-[var(--space-4)] w-fit" role="group" aria-label="Client addition method">
         <button
           type="button"
+          aria-pressed={addMethod === "create"}
           onClick={() => { setAddMethod("create"); setError(""); }}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
@@ -94,6 +95,7 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         </button>
         <button
           type="button"
+          aria-pressed={addMethod === "invite"}
           onClick={() => { setAddMethod("invite"); setError(""); }}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",

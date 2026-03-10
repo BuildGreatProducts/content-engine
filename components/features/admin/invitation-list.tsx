@@ -30,18 +30,27 @@ export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> 
     }
   };
 
-  const clientList = clients ?? [];
-
   return (
     <div className="flex flex-col gap-[var(--space-6)]">
       {/* Current Clients */}
-      {clientList.length > 0 && (
+      {clients === undefined ? (
         <Card>
           <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
             Clients
           </h2>
           <div className="flex flex-col gap-[var(--space-2)]">
-            {clientList.map((client) => (
+            {[1, 2].map((i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
+        </Card>
+      ) : clients !== null && clients.length > 0 ? (
+        <Card>
+          <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
+            Clients
+          </h2>
+          <div className="flex flex-col gap-[var(--space-2)]">
+            {clients.map((client) => (
               <div
                 key={client._id}
                 className="flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] bg-[var(--color-surface-2)] border border-[var(--color-border)]"
@@ -59,7 +68,7 @@ export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> 
             ))}
           </div>
         </Card>
-      )}
+      ) : null}
 
       {/* Invitations */}
       <Card>
@@ -83,6 +92,7 @@ export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> 
               const isExpired = inv.expiresAt < Date.now();
               const isAccepted = !!inv.acceptedAt;
               const isPending = !isAccepted && !isExpired;
+              const displayDate = (inv as any).lastSentAt ?? inv.createdAt;
 
               return (
                 <div
@@ -94,8 +104,8 @@ export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> 
                       {inv.email}
                     </p>
                     <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)]">
-                      Sent{" "}
-                      {new Date(inv.createdAt).toLocaleDateString("en-US", {
+                      {(inv as any).lastSentAt ? "Resent" : "Sent"}{" "}
+                      {new Date(displayDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",

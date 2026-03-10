@@ -83,10 +83,9 @@ export const resend = action({
       throw new ConvexError("Forbidden: admin access required");
     }
 
+    // Read invitation email before atomic mutation (for the email send)
     const invitation = await ctx.runQuery(internal.invitations._getById, { invitationId });
     if (!invitation) throw new ConvexError("Invitation not found");
-    if (invitation.workspaceId !== workspaceId) throw new ConvexError("Invitation does not belong to this workspace");
-    if (invitation.acceptedAt) throw new ConvexError("Invitation already accepted");
 
     const workspace = await ctx.runQuery(internal.invitations._getWorkspace, { workspaceId });
     if (!workspace) throw new ConvexError("Workspace not found");
@@ -97,8 +96,10 @@ export const resend = action({
     const token = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
     const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
 
+    // Atomic validation + token rotation inside the mutation
     await ctx.runMutation(internal.invitations._updateToken, {
       invitationId,
+      workspaceId,
       token,
       expiresAt,
     });
@@ -124,11 +125,20 @@ export const _getById = internalQuery({
 export const _updateToken = internalMutation({
   args: {
     invitationId: v.id("invitations"),
+    workspaceId: v.id("workspaces"),
     token: v.string(),
     expiresAt: v.number(),
   },
-  handler: async (ctx, { invitationId, token, expiresAt }) => {
-    await ctx.db.patch(invitationId, { token, expiresAt });
+  handler: async (ctx, { invitationId, workspaceId, token, expiresAt }) => {
+    const invitation = await ctx.db.get(invitationId);
+    if (!invitation) throw new ConvexError("Invitation not found");
+    if (invitation.workspaceId !== workspaceId) {
+      throw new ConvexError("Invitation does not belong to this workspace");
+    }
+    if (invitation.acceptedAt) {
+      throw new ConvexError("Invitation already accepted");
+    }
+    await ctx.db.patch(invitationId, { token, expiresAt, lastSentAt: Date.now() });
   },
 });
 
