@@ -44,7 +44,7 @@ export const generate = mutation({
       .withIndex("by_workspace_chronological", (q) =>
         q.eq("workspaceId", workspaceId).gte("createdAt", oneDayAgo)
       )
-      .collect();
+      .take(MAX_GENERATIONS_PER_DAY + 1);
 
     if (recentContent.length >= MAX_GENERATIONS_PER_DAY) {
       throw new ConvexError(
@@ -86,7 +86,7 @@ export const listByWorkspace = query({
           q.eq("workspaceId", workspaceId).eq("type", type)
         )
         .order("desc")
-        .collect();
+        .take(50);
     }
 
     return ctx.db
@@ -95,7 +95,7 @@ export const listByWorkspace = query({
         q.eq("workspaceId", workspaceId)
       )
       .order("desc")
-      .collect();
+      .take(50);
   },
 });
 

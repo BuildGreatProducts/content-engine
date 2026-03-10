@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ interface GenerationFormProps {
 }
 
 export function GenerationForm({ config, onSubmit, isGenerating }: GenerationFormProps) {
-  const schema = createBriefSchema(config);
+  const schema = useMemo(() => createBriefSchema(config), [config]);
 
   const {
     register,

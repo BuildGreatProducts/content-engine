@@ -39,6 +39,13 @@ export default function GeneratePage() {
         : "complete"
     : null;
 
+  // Redirect if content type is invalid
+  useEffect(() => {
+    if (!config) {
+      router.replace("/dashboard");
+    }
+  }, [config, router]);
+
   // Scroll to output when generation completes or fails
   const prevStatus = useRef(status);
   useEffect(() => {
@@ -52,7 +59,6 @@ export default function GeneratePage() {
   }, [status]);
 
   if (!config) {
-    router.replace("/dashboard");
     return null;
   }
 
@@ -68,6 +74,7 @@ export default function GeneratePage() {
         isHighPriority: config.isHighPriority,
       });
       setContentId(id);
+      setIsGenerating(false);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to generate content";

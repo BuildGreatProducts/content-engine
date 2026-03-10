@@ -185,11 +185,21 @@ export function getContentType(id: string): ContentTypeConfig | undefined {
 export function createBriefSchema(config: ContentTypeConfig) {
   const shape: Record<string, z.ZodTypeAny> = {};
   for (const field of config.fields) {
-    let fieldSchema = z.string();
-    if (field.required) {
-      fieldSchema = fieldSchema.min(1, `${field.label} is required`);
+    let fieldSchema: z.ZodTypeAny;
+
+    if (field.type === "select" && field.options && field.options.length > 0) {
+      const values = field.options.map((o) => o.value) as [string, ...string[]];
+      fieldSchema = field.required
+        ? z.enum(values, { message: `${field.label} is required` })
+        : z.enum(values).or(z.literal("")).optional();
+    } else {
+      const strSchema = field.required
+        ? z.string().min(1, `${field.label} is required`)
+        : z.string();
+      fieldSchema = field.required ? strSchema : strSchema.optional();
     }
-    shape[field.name] = field.required ? fieldSchema : fieldSchema.optional();
+
+    shape[field.name] = fieldSchema;
   }
   return z.object(shape);
 }

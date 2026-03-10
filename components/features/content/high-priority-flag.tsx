@@ -9,7 +9,7 @@ export function HighPriorityFlag() {
           High-priority content
         </p>
         <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)] mt-1">
-          This content type will be flagged for admin review before publishing.
+          This content type is flagged for admin review.
         </p>
       </div>
     </div>

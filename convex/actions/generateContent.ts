@@ -42,7 +42,11 @@ export const run = internalAction({
           }),
         ]);
 
-      const workspaceName = workspace?.name ?? "Unknown Workspace";
+      if (!workspace) {
+        throw new Error(`Workspace ${content.workspaceId} not found`);
+      }
+
+      const workspaceName = workspace.name;
 
       // Build system prompt
       const docSection = (
@@ -95,8 +99,8 @@ Output the content in markdown format. Do not include any preamble or meta-comme
       });
 
       const output = response.content
-        .filter((block) => block.type === "text")
-        .map((block) => ("text" in block ? block.text : ""))
+        .filter((block): block is Extract<typeof block, { type: "text" }> => block.type === "text")
+        .map((block) => block.text)
         .join("\n");
 
       await ctx.runMutation(internal.content._saveOutput, {
