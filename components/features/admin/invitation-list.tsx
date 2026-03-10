@@ -76,12 +76,16 @@ export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> 
           Invitations
         </h2>
 
-        {invitations === undefined || invitations === null ? (
+        {invitations === undefined ? (
           <div className="flex flex-col gap-[var(--space-3)]">
             {[1, 2].map((i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
+        ) : invitations === null ? (
+          <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)]">
+            Unable to load invitations.
+          </p>
         ) : invitations.length === 0 ? (
           <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)]">
             No invitations sent yet.

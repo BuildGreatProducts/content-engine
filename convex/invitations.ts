@@ -96,18 +96,19 @@ export const resend = action({
     const token = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
     const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
 
-    // Atomic validation + token rotation inside the mutation
-    await ctx.runMutation(internal.invitations._updateToken, {
-      invitationId,
-      workspaceId,
-      token,
-      expiresAt,
-    });
-
+    // Send email first — old token stays valid if this fails
     await ctx.runAction(internal.actions.sendInvitation.send, {
       email: invitation.email,
       token,
       workspaceName: workspace.name,
+      expiresAt,
+    });
+
+    // Commit token rotation only after successful send
+    await ctx.runMutation(internal.invitations._updateToken, {
+      invitationId,
+      workspaceId,
+      token,
       expiresAt,
     });
 

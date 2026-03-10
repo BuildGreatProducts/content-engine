@@ -156,7 +156,7 @@ export function DocumentEditor({
     <div className="flex flex-col gap-[var(--space-6)]">
       {DOCUMENT_TYPES.map((dt) => (
         <DocumentSection
-          key={dt.type}
+          key={`${workspaceId}-${dt.type}`}
           workspaceId={workspaceId}
           type={dt.type}
           title={dt.title}
