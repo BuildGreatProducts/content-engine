@@ -8,6 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function formatRelativeDate(ts: number): string {
+  const now = new Date();
+  const then = new Date(ts);
+  const midnightNow = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const midnightThen = new Date(then.getFullYear(), then.getMonth(), then.getDate()).getTime();
+  const dayDiff = Math.max(0, Math.round((midnightNow - midnightThen) / (1000 * 60 * 60 * 24)));
+  if (dayDiff === 0) return "Today";
+  if (dayDiff === 1) return "Yesterday";
+  if (dayDiff < 7) return `${dayDiff}d ago`;
+  return then.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export function WorkspaceList() {
   const workspaces = useQuery(api.workspaces.listWithStats);
   const router = useRouter();
@@ -53,6 +68,9 @@ export function WorkspaceList() {
             <th className="text-left px-4 py-3 text-[var(--text-xs)] font-medium text-[var(--color-text-secondary)] uppercase tracking-wider hidden lg:table-cell">
               Documents
             </th>
+            <th className="text-left px-4 py-3 text-[var(--text-xs)] font-medium text-[var(--color-text-secondary)] uppercase tracking-wider hidden lg:table-cell">
+              Last Activity
+            </th>
             <th className="px-4 py-3" />
           </tr>
         </thead>
@@ -63,8 +81,13 @@ export function WorkspaceList() {
               className="border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-surface-2)]/50"
             >
               <td className="px-4 py-3">
-                <div className="text-[var(--text-sm)] font-medium text-[var(--color-text-primary)]">
-                  {ws.name}
+                <div className="flex items-center gap-[var(--space-2)]">
+                  <div className="text-[var(--text-sm)] font-medium text-[var(--color-text-primary)]">
+                    {ws.name}
+                  </div>
+                  <Badge variant={ws.isActive ? "success" : "default"}>
+                    {ws.isActive ? "Active" : "Inactive"}
+                  </Badge>
                 </div>
                 <div className="text-[var(--text-xs)] text-[var(--color-text-secondary)]">
                   {ws.slug}
@@ -93,6 +116,9 @@ export function WorkspaceList() {
                     />
                   ))}
                 </div>
+              </td>
+              <td className="px-4 py-3 text-[var(--text-xs)] text-[var(--color-text-secondary)] hidden lg:table-cell">
+                {formatRelativeDate(ws.lastActivity)}
               </td>
               <td className="px-4 py-3 text-right">
                 <Button

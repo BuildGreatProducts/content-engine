@@ -122,11 +122,15 @@ export const listWithStats = query({
           .withIndex("by_workspace", (q) => q.eq("workspaceId", ws._id))
           .collect();
 
-        // Find client user for this workspace
-        const clientUser = await ctx.db
+        // Find client users for this workspace
+        const clientUsers = await ctx.db
           .query("users")
           .withIndex("by_workspace", (q) => q.eq("workspaceId", ws._id))
-          .first();
+          .collect();
+        // Pick the oldest client by createdAt as the representative
+        const clientUser = clientUsers.length > 0
+          ? clientUsers.reduce((oldest, u) => u.createdAt < oldest.createdAt ? u : oldest)
+          : null;
 
         const docTypes = ["tone_of_voice", "content_guidelines", "copywriting_framework"] as const;
         const documentStatus = docTypes.map((type) => ({
@@ -137,6 +141,7 @@ export const listWithStats = query({
         return {
           ...ws,
           contentCount: contentItems.length,
+          clientCount: clientUsers.length,
           pendingReviews: contentItems.filter((c) => !c.reviewedByAdmin).length,
           clientEmail: clientUser?.email ?? null,
           lastActivity: contentItems.length > 0
