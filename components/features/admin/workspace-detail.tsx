@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { getContentType } from "@/lib/content-types";
+import { getContentType, isGenerationFailed } from "@/lib/content-types";
 import { InviteClientForm } from "./invite-client-form";
 import { InvitationList } from "./invitation-list";
 import { DocumentEditor } from "./document-editor";
@@ -29,6 +29,19 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
   const wsId = workspaceId as Id<"workspaces">;
   const workspace = useQuery(api.workspaces.getById, { id: wsId });
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const documentsDirtyRef = useRef(false);
+
+  const handleDocsDirtyChange = useCallback((dirty: boolean) => {
+    documentsDirtyRef.current = dirty;
+  }, []);
+
+  const handleTabChange = (tab: Tab) => {
+    if (activeTab === "documents" && documentsDirtyRef.current && tab !== "documents") {
+      const confirmed = window.confirm("You have unsaved document changes. Discard and switch tabs?");
+      if (!confirmed) return;
+    }
+    setActiveTab(tab);
+  };
 
   if (workspace === undefined) {
     return (
@@ -81,7 +94,7 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
         {TABS.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
             className={cn(
               "px-4 py-2.5 text-[var(--text-sm)] font-medium transition-colors cursor-pointer -mb-px",
               activeTab === tab.key
@@ -96,7 +109,9 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
 
       {/* Tab content */}
       {activeTab === "overview" && <OverviewTab workspaceId={wsId} workspace={workspace} />}
-      {activeTab === "documents" && <DocumentEditor workspaceId={wsId} />}
+      <div className={activeTab === "documents" ? "" : "hidden"}>
+        <DocumentEditor workspaceId={wsId} onDirtyChange={handleDocsDirtyChange} />
+      </div>
       {activeTab === "invitations" && (
         <div className="flex flex-col gap-[var(--space-6)]">
           <InviteClientForm workspaceId={wsId} />
@@ -233,7 +248,7 @@ function OverviewTab({
           <div className="flex flex-col gap-[var(--space-2)]">
             {recentContent.map((item) => {
               const ct = getContentType(item.type);
-              const isFailed = item.output.startsWith("GENERATION_FAILED:");
+              const isFailed = isGenerationFailed(item.output);
               return (
                 <div
                   key={item._id}

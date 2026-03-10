@@ -9,13 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function formatRelativeDate(ts: number): string {
-  const now = Date.now();
-  const diff = now - ts;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
-  return new Date(ts).toLocaleDateString("en-GB", {
+  const now = new Date();
+  const then = new Date(ts);
+  const midnightNow = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const midnightThen = new Date(then.getFullYear(), then.getMonth(), then.getDate()).getTime();
+  const dayDiff = Math.max(0, Math.round((midnightNow - midnightThen) / (1000 * 60 * 60 * 24)));
+  if (dayDiff === 0) return "Today";
+  if (dayDiff === 1) return "Yesterday";
+  if (dayDiff < 7) return `${dayDiff}d ago`;
+  return then.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
   });

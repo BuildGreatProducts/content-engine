@@ -182,6 +182,16 @@ export function getContentType(id: string): ContentTypeConfig | undefined {
   return CONTENT_TYPES.find((t) => t.id === id);
 }
 
+export const GENERATION_FAILED_PREFIX = "GENERATION_FAILED:";
+
+export function isGenerationFailed(output: string): boolean {
+  return output.startsWith(GENERATION_FAILED_PREFIX);
+}
+
+export function getFailureMessage(output: string): string {
+  return output.replace(/^GENERATION_FAILED:\s*/, "");
+}
+
 export function createBriefSchema(config: ContentTypeConfig) {
   const shape: Record<string, z.ZodTypeAny> = {};
   for (const field of config.fields) {

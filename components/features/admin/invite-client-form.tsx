@@ -111,23 +111,23 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         <form onSubmit={handleCreateClient} className="flex flex-col gap-[var(--space-3)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-3)]">
             <div>
-              <label className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
+              <label htmlFor="create-client-name" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
                 Name
               </label>
-              <Input placeholder="Client name" value={clientName} onChange={(e) => setClientName(e.target.value)} required />
+              <Input id="create-client-name" placeholder="Client name" value={clientName} onChange={(e) => setClientName(e.target.value)} required />
             </div>
             <div>
-              <label className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
+              <label htmlFor="create-client-email" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
                 Email
               </label>
-              <Input type="email" placeholder="client@example.com" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} required />
+              <Input id="create-client-email" type="email" placeholder="client@example.com" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} required />
             </div>
           </div>
           <div>
-            <label className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
+            <label htmlFor="create-client-password" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
               Password
             </label>
-            <Input type="password" placeholder="Min 8 characters" value={clientPassword} onChange={(e) => setClientPassword(e.target.value)} required minLength={8} />
+            <Input id="create-client-password" type="password" placeholder="Min 8 characters" value={clientPassword} onChange={(e) => setClientPassword(e.target.value)} required minLength={8} />
           </div>
           <div>
             <Button type="submit" disabled={isSubmitting}>
@@ -138,7 +138,8 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         </form>
       ) : (
         <form onSubmit={handleSendInvite} className="flex gap-[var(--space-3)]">
-          <Input type="email" placeholder="client@example.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1" required />
+          <label htmlFor="invite-email" className="sr-only">Email address</label>
+          <Input id="invite-email" type="email" placeholder="client@example.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1" required />
           <Button type="submit" disabled={isSubmitting || !inviteEmail.trim()}>
             <Send size={16} className="mr-1.5" />
             {isSubmitting ? "Sending..." : "Send Invite"}

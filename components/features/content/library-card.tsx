@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Copy, Check, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getContentType } from "@/lib/content-types";
+import { getContentType, isGenerationFailed, getFailureMessage } from "@/lib/content-types";
 
 interface LibraryCardProps {
   type: string;
@@ -48,7 +48,7 @@ export function LibraryCard({
 }: LibraryCardProps) {
   const [copied, setCopied] = useState(false);
   const contentType = getContentType(type);
-  const isFailed = output.startsWith("GENERATION_FAILED:");
+  const isFailed = isGenerationFailed(output);
   const isEmpty = !output;
   const Icon = contentType?.icon;
 
@@ -63,7 +63,7 @@ export function LibraryCard({
   };
 
   const preview = isFailed
-    ? output.replace(/^GENERATION_FAILED:\s*/, "")
+    ? getFailureMessage(output)
     : truncate(stripMarkdown(output), 200);
 
   return (

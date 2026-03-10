@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -20,14 +20,17 @@ function DocumentSection({
   type,
   title,
   placeholder,
+  onDirtyChange,
 }: {
   workspaceId: Id<"workspaces">;
   type: "tone_of_voice" | "content_guidelines" | "copywriting_framework";
   title: string;
   placeholder: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const doc = useQuery(api.documents.getByType, { workspaceId, type });
   const upsert = useMutation(api.documents.upsert);
+  const textareaId = useId();
 
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
@@ -44,7 +47,10 @@ function DocumentSection({
   }, [doc]);
 
   const handleChange = (value: string) => {
-    dirtyRef.current = true;
+    if (!dirtyRef.current) {
+      dirtyRef.current = true;
+      onDirtyChange?.(true);
+    }
     setContent(value);
   };
 
@@ -53,6 +59,7 @@ function DocumentSection({
     try {
       await upsert({ workspaceId, type, title, content });
       dirtyRef.current = false;
+      onDirtyChange?.(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -74,9 +81,9 @@ function DocumentSection({
   return (
     <Card>
       <div className="flex items-center justify-between mb-[var(--space-4)]">
-        <h3 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)]">
+        <label htmlFor={textareaId} className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)]">
           {title}
-        </h3>
+        </label>
         {doc?.updatedAt && (
           <span className="text-[var(--text-xs)] text-[var(--color-text-secondary)]">
             Last updated{" "}
@@ -90,6 +97,7 @@ function DocumentSection({
       </div>
 
       <textarea
+        id={textareaId}
         value={content}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
@@ -118,7 +126,24 @@ function DocumentSection({
   );
 }
 
-export function DocumentEditor({ workspaceId }: { workspaceId: Id<"workspaces"> }) {
+export function DocumentEditor({
+  workspaceId,
+  onDirtyChange,
+}: {
+  workspaceId: Id<"workspaces">;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
+  const sectionDirtyRef = useRef(new Set<string>());
+
+  const handleSectionDirtyChange = (type: string, dirty: boolean) => {
+    if (dirty) {
+      sectionDirtyRef.current.add(type);
+    } else {
+      sectionDirtyRef.current.delete(type);
+    }
+    onDirtyChange?.(sectionDirtyRef.current.size > 0);
+  };
+
   return (
     <div className="flex flex-col gap-[var(--space-6)]">
       {DOCUMENT_TYPES.map((dt) => (
@@ -128,6 +153,7 @@ export function DocumentEditor({ workspaceId }: { workspaceId: Id<"workspaces"> 
           type={dt.type}
           title={dt.title}
           placeholder={dt.placeholder}
+          onDirtyChange={(dirty) => handleSectionDirtyChange(dt.type, dirty)}
         />
       ))}
     </div>

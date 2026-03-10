@@ -127,7 +127,10 @@ export const listWithStats = query({
           .query("users")
           .withIndex("by_workspace", (q) => q.eq("workspaceId", ws._id))
           .collect();
-        const clientUser = clientUsers[0] ?? null;
+        // Pick the oldest client by createdAt as the representative
+        const clientUser = clientUsers.length > 0
+          ? clientUsers.reduce((oldest, u) => u.createdAt < oldest.createdAt ? u : oldest)
+          : null;
 
         const docTypes = ["tone_of_voice", "content_guidelines", "copywriting_framework"] as const;
         const documentStatus = docTypes.map((type) => ({

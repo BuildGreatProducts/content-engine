@@ -69,6 +69,69 @@ export const send = action({
   },
 });
 
+export const resend = action({
+  args: {
+    workspaceId: v.id("workspaces"),
+    invitationId: v.id("invitations"),
+  },
+  handler: async (ctx, { workspaceId, invitationId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("Not authenticated");
+
+    const user = await ctx.runQuery(internal.invitations._getUser, { userId });
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Forbidden: admin access required");
+    }
+
+    const invitation = await ctx.runQuery(internal.invitations._getById, { invitationId });
+    if (!invitation) throw new ConvexError("Invitation not found");
+    if (invitation.workspaceId !== workspaceId) throw new ConvexError("Invitation does not belong to this workspace");
+    if (invitation.acceptedAt) throw new ConvexError("Invitation already accepted");
+
+    const workspace = await ctx.runQuery(internal.invitations._getWorkspace, { workspaceId });
+    if (!workspace) throw new ConvexError("Workspace not found");
+
+    // Generate new token and extend expiry
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    const token = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
+
+    await ctx.runMutation(internal.invitations._updateToken, {
+      invitationId,
+      token,
+      expiresAt,
+    });
+
+    await ctx.runAction(internal.actions.sendInvitation.send, {
+      email: invitation.email,
+      token,
+      workspaceName: workspace.name,
+      expiresAt,
+    });
+
+    return { success: true };
+  },
+});
+
+export const _getById = internalQuery({
+  args: { invitationId: v.id("invitations") },
+  handler: async (ctx, { invitationId }) => {
+    return ctx.db.get(invitationId);
+  },
+});
+
+export const _updateToken = internalMutation({
+  args: {
+    invitationId: v.id("invitations"),
+    token: v.string(),
+    expiresAt: v.number(),
+  },
+  handler: async (ctx, { invitationId, token, expiresAt }) => {
+    await ctx.db.patch(invitationId, { token, expiresAt });
+  },
+});
+
 // Internal queries needed by the send action
 export const _getUser = internalQuery({
   args: { userId: v.id("users") },

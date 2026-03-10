@@ -6,6 +6,7 @@ import { Copy, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { getFailureMessage } from "@/lib/content-types";
 
 interface ContentOutputProps {
   output: string;
@@ -44,7 +45,7 @@ export function ContentOutput({ output, status }: ContentOutputProps) {
   }
 
   if (status === "failed") {
-    const message = output.replace(/^GENERATION_FAILED:\s*/, "");
+    const message = getFailureMessage(output);
     return (
       <Card className="max-w-2xl border-[var(--color-error)]/30">
         <p className="text-[var(--text-sm)] text-[var(--color-error)]">

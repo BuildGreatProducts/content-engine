@@ -14,14 +14,14 @@ import { Clock, CheckCircle, XCircle, Send } from "lucide-react";
 export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> }) {
   const invitations = useQuery(api.invitations.listByWorkspace, { workspaceId });
   const clients = useQuery(api.users.listClients, { workspaceId });
-  const sendInvitation = useAction(api.invitations.send);
+  const resendInvitation = useAction(api.invitations.resend);
   const { toast } = useToast();
   const [resendingId, setResendingId] = useState<string | null>(null);
 
-  const handleResend = async (email: string, invId: string) => {
+  const handleResend = async (invId: string) => {
     setResendingId(invId);
     try {
-      await sendInvitation({ workspaceId, email });
+      await resendInvitation({ workspaceId, invitationId: invId as Id<"invitations"> });
       toast("Invitation resent", "success");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to resend", "error");
@@ -108,7 +108,7 @@ export function InvitationList({ workspaceId }: { workspaceId: Id<"workspaces"> 
                         variant="secondary"
                         size="sm"
                         disabled={resendingId === inv._id}
-                        onClick={() => handleResend(inv.email, inv._id)}
+                        onClick={() => handleResend(inv._id)}
                       >
                         <Send size={12} className="mr-1" />
                         {resendingId === inv._id ? "Sending..." : "Resend"}

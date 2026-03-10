@@ -54,9 +54,10 @@ export default function LibraryPage() {
       </h1>
 
       {/* Filter chips */}
-      <div className="flex flex-wrap gap-[var(--space-2)]">
+      <div className="flex flex-wrap gap-[var(--space-2)]" role="group" aria-label="Filter by content type">
         <button
           onClick={() => setActiveType(undefined)}
+          aria-pressed={activeType === undefined}
           className={cn(
             "px-3 py-1.5 rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors cursor-pointer",
             activeType === undefined
@@ -70,6 +71,7 @@ export default function LibraryPage() {
           <button
             key={ct.id}
             onClick={() => setActiveType(ct.id)}
+            aria-pressed={activeType === ct.id}
             className={cn(
               "px-3 py-1.5 rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors cursor-pointer",
               activeType === ct.id
