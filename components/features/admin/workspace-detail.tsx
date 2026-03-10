@@ -1,102 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { getContentType } from "@/lib/content-types";
+import { InviteClientForm } from "./invite-client-form";
+import { InvitationList } from "./invitation-list";
+import { DocumentEditor } from "./document-editor";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Send,
-  UserPlus,
-  Clock,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
-type AddMethod = "create" | "invite";
+type Tab = "overview" | "documents" | "invitations";
+const TABS: { key: Tab; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "documents", label: "Documents" },
+  { key: "invitations", label: "Invitations" },
+];
 
 export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
   const wsId = workspaceId as Id<"workspaces">;
   const workspace = useQuery(api.workspaces.getById, { id: wsId });
-  const invitations = useQuery(api.invitations.listByWorkspace, { workspaceId: wsId });
-  const clients = useQuery(api.users.listClients, { workspaceId: wsId });
-
-  const sendInvitation = useAction(api.invitations.send);
-  const createClient = useAction(api.invitations.createClient);
-  const { toast } = useToast();
-
-  const [addMethod, setAddMethod] = useState<AddMethod>("create");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  // Invite form state
-  const [inviteEmail, setInviteEmail] = useState("");
-
-  // Create form state
-  const [clientName, setClientName] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [clientPassword, setClientPassword] = useState("");
-
-  const handleSendInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail.trim()) return;
-
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await sendInvitation({
-        workspaceId: wsId,
-        email: inviteEmail.trim(),
-      });
-      toast("Invitation sent", "success");
-      setInviteEmail("");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to send invitation";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCreateClient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!clientName.trim() || !clientEmail.trim() || !clientPassword.trim())
-      return;
-    if (clientPassword.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await createClient({
-        workspaceId: wsId,
-        email: clientEmail.trim(),
-        password: clientPassword,
-        name: clientName.trim(),
-      });
-      toast("Client account created", "success");
-      setClientName("");
-      setClientEmail("");
-      setClientPassword("");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create client";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   if (workspace === undefined) {
     return (
@@ -117,8 +49,6 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
       </Card>
     );
   }
-
-  const clientList = clients ?? [];
 
   return (
     <div className="flex flex-col gap-[var(--space-6)]">
@@ -146,132 +76,128 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
         </Badge>
       </div>
 
-      {/* Description */}
-      {workspace.description && (
-        <Card>
-          <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)]">
-            {workspace.description}
-          </p>
-        </Card>
-      )}
-
-      {/* Add Client */}
-      <Card>
-        <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
-          Add Client
-        </h2>
-
-        {/* Method toggle */}
-        <div className="flex gap-1 p-1 bg-[var(--color-surface-2)] rounded-[var(--radius-md)] mb-[var(--space-4)] w-fit">
+      {/* Tab navigation */}
+      <div className="flex border-b border-[var(--color-border)]">
+        {TABS.map((tab) => (
           <button
-            type="button"
-            onClick={() => {
-              setAddMethod("create");
-              setError("");
-            }}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
-              addMethod === "create"
-                ? "bg-[var(--color-accent)] text-white"
+              "px-4 py-2.5 text-[var(--text-sm)] font-medium transition-colors cursor-pointer -mb-px",
+              activeTab === tab.key
+                ? "text-[var(--color-accent)] border-b-2 border-[var(--color-accent)]"
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             )}
           >
-            <UserPlus size={14} />
-            Create Account
+            {tab.label}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAddMethod("invite");
-              setError("");
-            }}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
-              addMethod === "invite"
-                ? "bg-[var(--color-accent)] text-white"
-                : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-            )}
-          >
-            <Send size={14} />
-            Email Invite
-          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === "overview" && <OverviewTab workspaceId={wsId} workspace={workspace} />}
+      {activeTab === "documents" && <DocumentEditor workspaceId={wsId} />}
+      {activeTab === "invitations" && (
+        <div className="flex flex-col gap-[var(--space-6)]">
+          <InviteClientForm workspaceId={wsId} />
+          <InvitationList workspaceId={wsId} />
         </div>
+      )}
+    </div>
+  );
+}
 
-        {addMethod === "create" ? (
-          <form
-            onSubmit={handleCreateClient}
-            className="flex flex-col gap-[var(--space-3)]"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-3)]">
-              <div>
-                <label className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
-                  Name
-                </label>
-                <Input
-                  placeholder="Client name"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="client@example.com"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  required
-                />
-              </div>
+function OverviewTab({
+  workspaceId,
+  workspace,
+}: {
+  workspaceId: Id<"workspaces">;
+  workspace: { _id: Id<"workspaces">; name: string; slug: string; description?: string; isActive: boolean; createdAt: number; updatedAt: number };
+}) {
+  const clients = useQuery(api.users.listClients, { workspaceId });
+  const content = useQuery(api.content.listByWorkspace, { workspaceId });
+  const updateWorkspace = useMutation(api.workspaces.update);
+  const { toast } = useToast();
+
+  const [showToggleModal, setShowToggleModal] = useState(false);
+  const [toggling, setToggling] = useState(false);
+
+  const handleToggleActive = async () => {
+    setToggling(true);
+    try {
+      await updateWorkspace({ id: workspaceId, isActive: !workspace.isActive });
+      toast(
+        workspace.isActive ? "Workspace deactivated" : "Workspace activated",
+        "success"
+      );
+      setShowToggleModal(false);
+    } catch (err) {
+      toast("Failed to update workspace", "error");
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const clientList = clients ?? [];
+  const contentItems = content ?? [];
+  const recentContent = contentItems.slice(0, 5);
+
+  return (
+    <div className="flex flex-col gap-[var(--space-6)]">
+      {/* Workspace info */}
+      <Card>
+        <div className="flex flex-col gap-[var(--space-4)]">
+          {workspace.description && (
+            <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)]">
+              {workspace.description}
+            </p>
+          )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[var(--space-4)]">
+            <div>
+              <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+                Created
+              </p>
+              <p className="text-[var(--text-sm)] text-[var(--color-text-primary)]">
+                {new Date(workspace.createdAt).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
             </div>
             <div>
-              <label className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
-                Password
-              </label>
-              <Input
-                type="password"
-                placeholder="Min 8 characters"
-                value={clientPassword}
-                onChange={(e) => setClientPassword(e.target.value)}
-                required
-                minLength={8}
-              />
+              <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+                Clients
+              </p>
+              <p className="text-[var(--text-sm)] text-[var(--color-text-primary)]">
+                {clientList.length}
+              </p>
             </div>
             <div>
-              <Button type="submit" disabled={isSubmitting}>
-                <UserPlus size={16} className="mr-1.5" />
-                {isSubmitting ? "Creating..." : "Create Account"}
+              <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+                Content Items
+              </p>
+              <p className="text-[var(--text-sm)] text-[var(--color-text-primary)]">
+                {contentItems.length}
+              </p>
+            </div>
+            <div>
+              <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+                Status
+              </p>
+              <Button
+                variant={workspace.isActive ? "secondary" : "primary"}
+                size="sm"
+                onClick={() => setShowToggleModal(true)}
+              >
+                {workspace.isActive ? "Deactivate" : "Activate"}
               </Button>
             </div>
-          </form>
-        ) : (
-          <form onSubmit={handleSendInvite} className="flex gap-[var(--space-3)]">
-            <Input
-              type="email"
-              placeholder="client@example.com"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              className="flex-1"
-              required
-            />
-            <Button type="submit" disabled={isSubmitting || !inviteEmail.trim()}>
-              <Send size={16} className="mr-1.5" />
-              {isSubmitting ? "Sending..." : "Send Invite"}
-            </Button>
-          </form>
-        )}
-
-        {error && (
-          <p className="text-[var(--text-sm)] text-[var(--color-error)] mt-[var(--space-2)]">
-            {error}
-          </p>
-        )}
+          </div>
+        </div>
       </Card>
 
-      {/* Current Clients */}
+      {/* Clients */}
       {clientList.length > 0 && (
         <Card>
           <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
@@ -298,70 +224,72 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
         </Card>
       )}
 
-      {/* Invitations List */}
-      <Card>
-        <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
-          Invitations
-        </h2>
-
-        {invitations === undefined || invitations === null ? (
-          <div className="flex flex-col gap-[var(--space-3)]">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : invitations.length === 0 ? (
-          <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)]">
-            No invitations sent yet.
-          </p>
-        ) : (
+      {/* Recent content */}
+      {recentContent.length > 0 && (
+        <Card>
+          <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">
+            Recent Content
+          </h2>
           <div className="flex flex-col gap-[var(--space-2)]">
-            {invitations.map((inv) => {
-              const isExpired = inv.expiresAt < Date.now();
-              const isAccepted = !!inv.acceptedAt;
-
+            {recentContent.map((item) => {
+              const ct = getContentType(item.type);
+              const isFailed = item.output.startsWith("GENERATION_FAILED:");
               return (
                 <div
-                  key={inv._id}
+                  key={item._id}
                   className="flex items-center justify-between px-4 py-3 rounded-[var(--radius-md)] bg-[var(--color-surface-2)] border border-[var(--color-border)]"
                 >
-                  <div>
-                    <p className="text-[var(--text-sm)] text-[var(--color-text-primary)]">
-                      {inv.email}
-                    </p>
-                    <p className="text-[var(--text-xs)] text-[var(--color-text-secondary)]">
-                      Sent{" "}
-                      {new Date(inv.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    {isAccepted ? (
-                      <Badge variant="success">
-                        <CheckCircle size={12} className="mr-1" />
-                        Accepted
-                      </Badge>
-                    ) : isExpired ? (
-                      <Badge variant="error">
-                        <XCircle size={12} className="mr-1" />
-                        Expired
-                      </Badge>
-                    ) : (
-                      <Badge variant="warning">
-                        <Clock size={12} className="mr-1" />
-                        Pending
-                      </Badge>
+                  <div className="flex items-center gap-[var(--space-3)]">
+                    <span className="text-[var(--text-xs)] font-medium text-[var(--color-text-secondary)] uppercase">
+                      {ct?.name ?? item.type}
+                    </span>
+                    {isFailed && <Badge variant="error">Failed</Badge>}
+                    {!isFailed && item.isHighPriority && !item.reviewedByAdmin && (
+                      <Badge variant="warning">Pending Review</Badge>
                     )}
+                    {item.reviewedByAdmin && <Badge variant="success">Reviewed</Badge>}
                   </div>
+                  <span className="text-[var(--text-xs)] text-[var(--color-text-secondary)]">
+                    {new Date(item.createdAt).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
                 </div>
               );
             })}
           </div>
-        )}
-      </Card>
+        </Card>
+      )}
+
+      {/* Toggle active modal */}
+      <Modal open={showToggleModal} onClose={() => setShowToggleModal(false)}>
+        <h2 className="text-[var(--text-lg)] font-semibold text-[var(--color-text-primary)] mb-[var(--space-3)]">
+          {workspace.isActive ? "Deactivate" : "Activate"} Workspace
+        </h2>
+        <p className="text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-6)]">
+          {workspace.isActive
+            ? `Are you sure you want to deactivate "${workspace.name}"? Clients will lose access to content generation.`
+            : `Re-activate "${workspace.name}"? Clients will regain access to content generation.`}
+        </p>
+        <div className="flex justify-end gap-[var(--space-3)]">
+          <Button variant="secondary" onClick={() => setShowToggleModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant={workspace.isActive ? "destructive" : "primary"}
+            onClick={handleToggleActive}
+            disabled={toggling}
+          >
+            {toggling
+              ? "Updating..."
+              : workspace.isActive
+                ? "Deactivate"
+                : "Activate"}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

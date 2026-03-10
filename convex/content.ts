@@ -1,4 +1,5 @@
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
@@ -96,6 +97,35 @@ export const listByWorkspace = query({
       )
       .order("desc")
       .take(50);
+  },
+});
+
+export const listByWorkspacePaginated = query({
+  args: {
+    workspaceId: v.id("workspaces"),
+    type: v.optional(contentType),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { workspaceId, type, paginationOpts }) => {
+    await requireWorkspaceAccess(ctx, workspaceId);
+
+    if (type) {
+      return ctx.db
+        .query("content")
+        .withIndex("by_workspace_and_type", (q) =>
+          q.eq("workspaceId", workspaceId).eq("type", type)
+        )
+        .order("desc")
+        .paginate(paginationOpts);
+    }
+
+    return ctx.db
+      .query("content")
+      .withIndex("by_workspace_chronological", (q) =>
+        q.eq("workspaceId", workspaceId)
+      )
+      .order("desc")
+      .paginate(paginationOpts);
   },
 });
 
