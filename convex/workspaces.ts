@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -90,6 +90,13 @@ export const update = mutation({
   handler: async (ctx, { id, ...fields }) => {
     await requireAdmin(ctx);
     await ctx.db.patch(id, { ...fields, updatedAt: Date.now() });
+  },
+});
+
+export const _getById = internalQuery({
+  args: { id: v.id("workspaces") },
+  handler: async (ctx, { id }) => {
+    return ctx.db.get(id);
   },
 });
 
