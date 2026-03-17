@@ -10,6 +10,7 @@
 
 import type * as actions_createClient from "../actions/createClient.js";
 import type * as actions_generateContent from "../actions/generateContent.js";
+import type * as actions_notifyAdminReview from "../actions/notifyAdminReview.js";
 import type * as actions_sendInvitation from "../actions/sendInvitation.js";
 import type * as auth from "../auth.js";
 import type * as clientRecords from "../clientRecords.js";
@@ -31,6 +32,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "actions/createClient": typeof actions_createClient;
   "actions/generateContent": typeof actions_generateContent;
+  "actions/notifyAdminReview": typeof actions_notifyAdminReview;
   "actions/sendInvitation": typeof actions_sendInvitation;
   auth: typeof auth;
   clientRecords: typeof clientRecords;

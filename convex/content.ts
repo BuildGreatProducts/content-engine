@@ -159,6 +159,36 @@ export const markReviewed = mutation({
   },
 });
 
+export const listHighPriorityUnreviewed = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+
+    const items = await ctx.db
+      .query("content")
+      .order("desc")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("isHighPriority"), true),
+          q.eq(q.field("reviewedByAdmin"), false)
+        )
+      )
+      .collect();
+
+    const results = await Promise.all(
+      items.map(async (item) => {
+        const workspace = await ctx.db.get(item.workspaceId);
+        return {
+          ...item,
+          workspaceName: workspace?.name ?? "Unknown",
+        };
+      })
+    );
+
+    return results;
+  },
+});
+
 export const _getById = internalQuery({
   args: { id: v.id("content") },
   handler: async (ctx, { id }) => {

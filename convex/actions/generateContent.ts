@@ -107,6 +107,19 @@ Output the content in markdown format. Do not include any preamble or meta-comme
         id: contentId,
         output,
       });
+
+      // Notify admin if high-priority content was generated
+      if (content.isHighPriority) {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.actions.notifyAdminReview.send,
+          {
+            contentId,
+            workspaceName,
+            contentType: content.type,
+          }
+        );
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown error occurred";

@@ -5,13 +5,14 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
-import { LayoutDashboard, Building2, Users, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Building2, Users, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/reviews", label: "Reviews", icon: ClipboardCheck },
   { href: "/admin/workspaces", label: "Workspaces", icon: Building2 },
   { href: "/admin/clients", label: "Clients", icon: Users },
 ];
