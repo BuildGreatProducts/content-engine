@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { getContentType, isGenerationFailed } from "@/lib/content-types";
-import ReactMarkdown from "react-markdown";
+import dynamic from "next/dynamic";
 import { useState } from "react";
+
+const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 interface ReviewCardProps {
   id: Id<"content">;

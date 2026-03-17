@@ -1,28 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import Markdown from "react-markdown";
+import dynamic from "next/dynamic";
 import { Copy, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { getFailureMessage } from "@/lib/content-types";
+
+const Markdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 interface ContentOutputProps {
   output: string;
   status: "generating" | "complete" | "failed";
+  onRetry?: () => void;
 }
 
-export function ContentOutput({ output, status }: ContentOutputProps) {
+export function ContentOutput({ output, status, onRetry }: ContentOutputProps) {
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(output);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy to clipboard:", err);
+    } catch {
+      toast("Couldn't copy to clipboard. Select and copy the text manually.", "error");
     }
   };
 
@@ -51,6 +56,11 @@ export function ContentOutput({ output, status }: ContentOutputProps) {
         <p className="text-[var(--text-sm)] text-[var(--color-error)]">
           Generation failed: {message}
         </p>
+        {onRetry && (
+          <Button variant="secondary" size="sm" onClick={onRetry} className="mt-[var(--space-3)]">
+            Try Again
+          </Button>
+        )}
       </Card>
     );
   }
@@ -62,17 +72,19 @@ export function ContentOutput({ output, status }: ContentOutputProps) {
           Generated Content
         </h3>
         <Button variant="secondary" size="sm" onClick={handleCopy}>
-          {copied ? (
-            <>
-              <Check size={14} className="mr-1.5" />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy size={14} className="mr-1.5" />
-              Copy
-            </>
-          )}
+          <span aria-live="polite">
+            {copied ? (
+              <>
+                <Check size={14} className="mr-1.5 inline" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy size={14} className="mr-1.5 inline" />
+                Copy
+              </>
+            )}
+          </span>
         </Button>
       </div>
       <div

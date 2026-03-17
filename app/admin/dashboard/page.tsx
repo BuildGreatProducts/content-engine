@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { StatsCards } from "@/components/features/admin/stats-cards";
 import { WorkspaceList } from "@/components/features/admin/workspace-list";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +21,9 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col gap-[var(--space-8)]">
         <StatsCards />
 
-        {count > 0 && (
+        {pendingReviews === undefined ? (
+          <Skeleton className="h-14 w-full" />
+        ) : count > 0 ? (
           <Card className="border-[var(--color-warning)]/30 bg-[var(--color-warning)]/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-[var(--space-3)]">
@@ -37,7 +40,7 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
           </Card>
-        )}
+        ) : null}
 
         <div>
           <h2 className="text-[var(--text-lg)] font-medium text-[var(--color-text-primary)] mb-[var(--space-4)]">

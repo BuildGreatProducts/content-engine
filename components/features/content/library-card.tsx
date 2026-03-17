@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Copy, Check, AlertTriangle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast";
 import { getContentType, isGenerationFailed, getFailureMessage } from "@/lib/content-types";
 
 interface LibraryCardProps {
@@ -47,6 +48,7 @@ export function LibraryCard({
   reviewedByAdmin,
 }: LibraryCardProps) {
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
   const contentType = getContentType(type);
   const isFailed = isGenerationFailed(output);
   const isEmpty = !output;
@@ -57,8 +59,8 @@ export function LibraryCard({
       await navigator.clipboard.writeText(output);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
+    } catch {
+      toast("Couldn't copy to clipboard. Select and copy the text manually.", "error");
     }
   };
 
@@ -115,20 +117,23 @@ export function LibraryCard({
 
         {!isFailed && !isEmpty && (
           <button
+            type="button"
             onClick={handleCopy}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-[var(--radius-sm)] text-[var(--text-xs)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            className="inline-flex items-center gap-1 px-2 py-1 min-h-[44px] min-w-[44px] rounded-[var(--radius-sm)] text-[var(--text-xs)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100 md:focus-visible:opacity-100"
           >
-            {copied ? (
-              <>
-                <Check size={12} />
-                Copied
-              </>
-            ) : (
-              <>
-                <Copy size={12} />
-                Copy
-              </>
-            )}
+            <span aria-live="polite">
+              {copied ? (
+                <>
+                  <Check size={12} className="inline" />
+                  {" "}Copied
+                </>
+              ) : (
+                <>
+                  <Copy size={12} className="inline" />
+                  {" "}Copy
+                </>
+              )}
+            </span>
           </button>
         )}
       </div>
