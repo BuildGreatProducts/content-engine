@@ -76,7 +76,7 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         <button
           type="button"
           aria-pressed={addMethod === "create"}
-          onClick={() => { setAddMethod("create"); setServerError(""); }}
+          onClick={() => { setAddMethod("create"); setServerError(""); inviteForm.reset(); }}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
             addMethod === "create"
@@ -90,7 +90,7 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         <button
           type="button"
           aria-pressed={addMethod === "invite"}
-          onClick={() => { setAddMethod("invite"); setServerError(""); }}
+          onClick={() => { setAddMethod("invite"); setServerError(""); createForm.reset(); }}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
             addMethod === "invite"
