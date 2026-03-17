@@ -103,7 +103,14 @@ export default function GeneratePage() {
 
       {contentId && status && (
         <div ref={outputRef}>
-          <ContentOutput output={content?.output ?? ""} status={status} />
+          <ContentOutput
+            output={content?.output ?? ""}
+            status={status}
+            onRetry={() => {
+              setContentId(null);
+              setIsGenerating(false);
+            }}
+          />
         </div>
       )}
     </div>

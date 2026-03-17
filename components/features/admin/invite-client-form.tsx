@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -10,6 +12,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { Send, UserPlus } from "lucide-react";
+import {
+  createClientSchema,
+  inviteEmailSchema,
+  type CreateClientFormData,
+  type InviteEmailFormData,
+} from "@/lib/validations/invitation";
 
 type AddMethod = "create" | "invite";
 
@@ -19,56 +27,42 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
   const { toast } = useToast();
 
   const [addMethod, setAddMethod] = useState<AddMethod>("create");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
 
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [clientPassword, setClientPassword] = useState("");
+  const createForm = useForm<CreateClientFormData>({
+    resolver: zodResolver(createClientSchema),
+    mode: "onBlur",
+  });
 
-  const handleSendInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail.trim()) return;
+  const inviteForm = useForm<InviteEmailFormData>({
+    resolver: zodResolver(inviteEmailSchema),
+    mode: "onBlur",
+  });
 
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await sendInvitation({ workspaceId, email: inviteEmail.trim() });
-      toast("Invitation sent", "success");
-      setInviteEmail("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send invitation");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCreateClient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!clientName.trim() || !clientEmail.trim() || !clientPassword.trim()) return;
-    if (clientPassword.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
-    setError("");
-    setIsSubmitting(true);
+  const handleCreateClient = async (data: CreateClientFormData) => {
+    setServerError("");
     try {
       await createClient({
         workspaceId,
-        email: clientEmail.trim(),
-        password: clientPassword,
-        name: clientName.trim(),
+        email: data.email,
+        password: data.password,
+        name: data.name,
       });
       toast("Client account created", "success");
-      setClientName("");
-      setClientEmail("");
-      setClientPassword("");
+      createForm.reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create client");
-    } finally {
-      setIsSubmitting(false);
+      setServerError(err instanceof Error ? err.message : "Failed to create client");
+    }
+  };
+
+  const handleSendInvite = async (data: InviteEmailFormData) => {
+    setServerError("");
+    try {
+      await sendInvitation({ workspaceId, email: data.email });
+      toast("Invitation sent", "success");
+      inviteForm.reset();
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Failed to send invitation");
     }
   };
 
@@ -82,7 +76,7 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         <button
           type="button"
           aria-pressed={addMethod === "create"}
-          onClick={() => { setAddMethod("create"); setError(""); }}
+          onClick={() => { setAddMethod("create"); setServerError(""); }}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
             addMethod === "create"
@@ -96,7 +90,7 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
         <button
           type="button"
           aria-pressed={addMethod === "invite"}
-          onClick={() => { setAddMethod("invite"); setError(""); }}
+          onClick={() => { setAddMethod("invite"); setServerError(""); }}
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[var(--text-sm)] transition-colors cursor-pointer",
             addMethod === "invite"
@@ -110,48 +104,72 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
       </div>
 
       {addMethod === "create" ? (
-        <form onSubmit={handleCreateClient} className="flex flex-col gap-[var(--space-3)]">
+        <form onSubmit={createForm.handleSubmit(handleCreateClient)} className="flex flex-col gap-[var(--space-3)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-3)]">
             <div>
               <label htmlFor="create-client-name" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
                 Name
               </label>
-              <Input id="create-client-name" placeholder="Client name" value={clientName} onChange={(e) => setClientName(e.target.value)} required />
+              <Input id="create-client-name" placeholder="Client name" {...createForm.register("name")} />
+              {createForm.formState.errors.name && (
+                <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
+                  {createForm.formState.errors.name.message}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="create-client-email" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
                 Email
               </label>
-              <Input id="create-client-email" type="email" placeholder="client@example.com" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} required />
+              <Input id="create-client-email" type="email" placeholder="client@example.com" {...createForm.register("email")} />
+              {createForm.formState.errors.email && (
+                <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
+                  {createForm.formState.errors.email.message}
+                </p>
+              )}
             </div>
           </div>
           <div>
             <label htmlFor="create-client-password" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
               Password
             </label>
-            <Input id="create-client-password" type="password" placeholder="Min 8 characters" value={clientPassword} onChange={(e) => setClientPassword(e.target.value)} required minLength={8} />
+            <Input id="create-client-password" type="password" placeholder="Min 8 characters" {...createForm.register("password")} />
+            {createForm.formState.errors.password && (
+              <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
+                {createForm.formState.errors.password.message}
+              </p>
+            )}
           </div>
           <div>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={createForm.formState.isSubmitting}>
               <UserPlus size={16} className="mr-1.5" />
-              {isSubmitting ? "Creating..." : "Create Account"}
+              {createForm.formState.isSubmitting ? "Creating..." : "Create Account"}
             </Button>
           </div>
         </form>
       ) : (
-        <form onSubmit={handleSendInvite} className="flex gap-[var(--space-3)]">
-          <label htmlFor="invite-email" className="sr-only">Email address</label>
-          <Input id="invite-email" type="email" placeholder="client@example.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1" required />
-          <Button type="submit" disabled={isSubmitting || !inviteEmail.trim()}>
-            <Send size={16} className="mr-1.5" />
-            {isSubmitting ? "Sending..." : "Send Invite"}
-          </Button>
+        <form onSubmit={inviteForm.handleSubmit(handleSendInvite)} className="flex flex-col gap-[var(--space-3)]">
+          <div className="flex gap-[var(--space-3)]">
+            <div className="flex-1">
+              <label htmlFor="invite-email" className="sr-only">Email address</label>
+              <Input id="invite-email" type="email" placeholder="client@example.com" {...inviteForm.register("email")} />
+            </div>
+            <Button type="submit" disabled={inviteForm.formState.isSubmitting}>
+              <Send size={16} className="mr-1.5" />
+              {inviteForm.formState.isSubmitting ? "Sending..." : "Send Invite"}
+            </Button>
+          </div>
+          {inviteForm.formState.errors.email && (
+            <p className="text-[var(--text-xs)] text-[var(--color-error)]">
+              {inviteForm.formState.errors.email.message}
+            </p>
+          )}
         </form>
       )}
 
-      {error && (
+      {serverError && (
         <p className="text-[var(--text-sm)] text-[var(--color-error)] mt-[var(--space-2)]">
-          {error}
+          {serverError}
         </p>
       )}
     </Card>

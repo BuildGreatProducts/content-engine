@@ -37,6 +37,7 @@ export function AcceptInviteForm() {
     formState: { errors },
   } = useForm<AcceptInviteFormData>({
     resolver: zodResolver(acceptInviteSchema),
+    mode: "onBlur",
   });
 
   // After sign-up, once auth is established, accept the invitation

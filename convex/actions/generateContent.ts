@@ -91,12 +91,45 @@ Output the content in markdown format. Do not include any preamble or meta-comme
       const { default: Anthropic } = await import("@anthropic-ai/sdk");
       const client = new Anthropic();
 
-      const response = await client.messages.create({
-        model,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: "user", content: briefLines.join("\n") }],
-      });
+      let response;
+      const MAX_RETRIES = 3;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          response = await client.messages.create({
+            model,
+            max_tokens: maxTokens,
+            system: systemPrompt,
+            messages: [{ role: "user", content: briefLines.join("\n") }],
+          });
+          break;
+        } catch (apiError: any) {
+          const isRateLimit =
+            apiError?.status === 429 ||
+            apiError?.error?.type === "rate_limit_error";
+          const isTimeout =
+            apiError?.error?.type === "timeout_error" ||
+            apiError?.code === "ETIMEDOUT";
+
+          if (isRateLimit && attempt < MAX_RETRIES) {
+            const backoff = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+            await new Promise((r) => setTimeout(r, backoff));
+            continue;
+          }
+
+          if (isTimeout) {
+            throw new Error(
+              "Content generation is taking longer than expected. Please try again."
+            );
+          }
+
+          // Don't expose raw API error details to the client
+          throw new Error("Content generation failed. Please try again.");
+        }
+      }
+
+      if (!response) {
+        throw new Error("Content generation failed after multiple attempts. Please try again.");
+      }
 
       const output = response.content
         .filter((block): block is Extract<typeof block, { type: "text" }> => block.type === "text")
@@ -128,9 +161,18 @@ Output the content in markdown format. Do not include any preamble or meta-comme
         }
       }
     } catch (error) {
-      const message =
+      const rawMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
-      console.error(`Content generation failed for ${contentId}:`, message);
+      console.error(`Content generation failed for ${contentId}:`, rawMessage);
+      // Only pass through known safe messages; sanitize anything else
+      const safeMessages = [
+        "Content generation is taking longer than expected. Please try again.",
+        "Content generation failed. Please try again.",
+        "Content generation failed after multiple attempts. Please try again.",
+      ];
+      const message = safeMessages.includes(rawMessage)
+        ? rawMessage
+        : "Content generation failed. Please try again.";
       await ctx.runMutation(internal.content._markFailed, {
         id: contentId,
         message,

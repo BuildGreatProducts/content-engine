@@ -39,6 +39,7 @@ export function WorkspaceForm() {
   } = useForm<WorkspaceFormData>({
     resolver: zodResolver(workspaceSchema),
     defaultValues: { name: "", slug: "", description: "" },
+    mode: "onBlur",
   });
 
   const nameValue = watch("name");

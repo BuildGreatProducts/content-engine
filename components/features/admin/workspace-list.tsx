@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Building2 } from "lucide-react";
+import Link from "next/link";
 
 function formatRelativeDate(ts: number): string {
   const now = new Date();
@@ -44,15 +46,21 @@ export function WorkspaceList() {
   if (workspaces.length === 0) {
     return (
       <Card className="text-center py-12">
-        <p className="text-[var(--color-text-secondary)] text-[var(--text-sm)]">
-          No workspaces yet. Create your first workspace to get started.
-        </p>
+        <div className="flex flex-col items-center gap-[var(--space-4)]">
+          <Building2 size={48} className="text-[var(--color-text-secondary)]" />
+          <p className="text-[var(--color-text-secondary)] text-[var(--text-sm)]">
+            No workspaces yet. Create your first workspace to get started.
+          </p>
+          <Link href="/admin/workspaces/new">
+            <Button>Create Workspace</Button>
+          </Link>
+        </div>
       </Card>
     );
   }
 
   return (
-    <div className="border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden">
+    <div className="border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">

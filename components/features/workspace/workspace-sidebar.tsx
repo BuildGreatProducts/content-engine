@@ -50,7 +50,7 @@ export function WorkspaceSidebar() {
               href={item.href}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "flex items-center gap-[var(--space-3)] px-3 py-2 rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors duration-[var(--transition-fast)]",
+                "flex items-center gap-[var(--space-3)] px-3 py-3 md:py-2 rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors duration-[var(--transition-fast)]",
                 isActive
                   ? "text-[var(--color-accent)] bg-[var(--color-accent)]/10 border-l-2 border-[var(--color-accent)]"
                   : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]"

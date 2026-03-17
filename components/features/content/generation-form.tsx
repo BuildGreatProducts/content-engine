@@ -25,6 +25,7 @@ export function GenerationForm({ config, onSubmit, isGenerating }: GenerationFor
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
+    mode: "onBlur",
   });
 
   return (

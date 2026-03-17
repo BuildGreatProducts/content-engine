@@ -59,7 +59,7 @@ export default function LibraryPage() {
           onClick={() => setActiveType(undefined)}
           aria-pressed={activeType === undefined}
           className={cn(
-            "px-3 py-1.5 rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors cursor-pointer",
+            "px-3 py-1.5 min-h-[44px] rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors cursor-pointer",
             activeType === undefined
               ? "bg-[var(--color-accent)] text-white"
               : "bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
@@ -73,7 +73,7 @@ export default function LibraryPage() {
             onClick={() => setActiveType(ct.id)}
             aria-pressed={activeType === ct.id}
             className={cn(
-              "px-3 py-1.5 rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors cursor-pointer",
+              "px-3 py-1.5 min-h-[44px] rounded-[var(--radius-md)] text-[var(--text-sm)] transition-colors cursor-pointer",
               activeType === ct.id
                 ? "bg-[var(--color-accent)] text-white"
                 : "bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
@@ -95,7 +95,7 @@ export default function LibraryPage() {
         <div className="flex flex-col items-center justify-center py-16 gap-[var(--space-4)]">
           <BookOpen size={48} className="text-[var(--color-text-secondary)]" />
           <p className="text-[var(--color-text-secondary)] text-center max-w-sm">
-            No content yet. Pick a content type and create your first piece.
+            No content yet. Pick a content type above and create your first piece.
           </p>
           <Link href="/dashboard">
             <Button>Go to Dashboard</Button>

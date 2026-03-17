@@ -89,6 +89,7 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
         <Link
           href="/admin/workspaces"
           className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          aria-label="Back to workspaces"
         >
           <ArrowLeft size={20} />
         </Link>
@@ -122,7 +123,7 @@ export function WorkspaceDetail({ workspaceId }: { workspaceId: string }) {
             onClick={() => handleTabChange(tab.key)}
             onKeyDown={(e) => handleTabKeyDown(e, index)}
             className={cn(
-              "px-4 py-2.5 text-[var(--text-sm)] font-medium transition-colors cursor-pointer -mb-px outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
+              "px-4 py-2.5 min-h-[44px] text-[var(--text-sm)] font-medium transition-colors cursor-pointer -mb-px outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]",
               activeTab === tab.key
                 ? "text-[var(--color-accent)] border-b-2 border-[var(--color-accent)]"
                 : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
