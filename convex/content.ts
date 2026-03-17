@@ -166,13 +166,10 @@ export const listHighPriorityUnreviewed = query({
 
     const items = await ctx.db
       .query("content")
-      .order("desc")
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("isHighPriority"), true),
-          q.eq(q.field("reviewedByAdmin"), false)
-        )
+      .withIndex("by_high_priority_review_status", (q) =>
+        q.eq("isHighPriority", true).eq("reviewedByAdmin", false)
       )
+      .order("desc")
       .collect();
 
     const results = await Promise.all(
