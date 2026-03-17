@@ -117,8 +117,9 @@ export function LibraryCard({
 
         {!isFailed && !isEmpty && (
           <button
+            type="button"
             onClick={handleCopy}
-            className="inline-flex items-center gap-1 px-2 py-1 min-h-[44px] min-w-[44px] rounded-[var(--radius-sm)] text-[var(--text-xs)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            className="inline-flex items-center gap-1 px-2 py-1 min-h-[44px] min-w-[44px] rounded-[var(--radius-sm)] text-[var(--text-xs)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100 md:focus-visible:opacity-100"
           >
             <span aria-live="polite">
               {copied ? (

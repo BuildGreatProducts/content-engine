@@ -24,6 +24,7 @@ export default function GeneratePage() {
 
   const [contentId, setContentId] = useState<Id<"content"> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const lastBriefRef = useRef<Record<string, unknown> | null>(null);
 
   const content = useQuery(
     api.content.getById,
@@ -62,10 +63,12 @@ export default function GeneratePage() {
     return null;
   }
 
-  const handleSubmit = async (data: Record<string, unknown>) => {
+  const handleGenerate = async (data: Record<string, unknown>) => {
     if (!workspace?._id) return;
 
+    lastBriefRef.current = data;
     setIsGenerating(true);
+    setContentId(null);
     try {
       const id = await generateContent({
         workspaceId: workspace._id,
@@ -83,6 +86,12 @@ export default function GeneratePage() {
     }
   };
 
+  const handleRetry = () => {
+    if (lastBriefRef.current) {
+      handleGenerate(lastBriefRef.current);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-[var(--space-6)]">
       <Button
@@ -97,7 +106,7 @@ export default function GeneratePage() {
 
       <GenerationForm
         config={config}
-        onSubmit={handleSubmit}
+        onSubmit={handleGenerate}
         isGenerating={isGenerating}
       />
 
@@ -106,10 +115,7 @@ export default function GeneratePage() {
           <ContentOutput
             output={content?.output ?? ""}
             status={status}
-            onRetry={() => {
-              setContentId(null);
-              setIsGenerating(false);
-            }}
+            onRetry={handleRetry}
           />
         </div>
       )}

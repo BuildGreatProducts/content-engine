@@ -110,9 +110,15 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
               <label htmlFor="create-client-name" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
                 Name
               </label>
-              <Input id="create-client-name" placeholder="Client name" {...createForm.register("name")} />
+              <Input
+                id="create-client-name"
+                placeholder="Client name"
+                aria-invalid={!!createForm.formState.errors.name}
+                aria-describedby={createForm.formState.errors.name ? "create-client-name-error" : undefined}
+                {...createForm.register("name")}
+              />
               {createForm.formState.errors.name && (
-                <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
+                <p id="create-client-name-error" className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
                   {createForm.formState.errors.name.message}
                 </p>
               )}
@@ -121,9 +127,16 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
               <label htmlFor="create-client-email" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
                 Email
               </label>
-              <Input id="create-client-email" type="email" placeholder="client@example.com" {...createForm.register("email")} />
+              <Input
+                id="create-client-email"
+                type="email"
+                placeholder="client@example.com"
+                aria-invalid={!!createForm.formState.errors.email}
+                aria-describedby={createForm.formState.errors.email ? "create-client-email-error" : undefined}
+                {...createForm.register("email")}
+              />
               {createForm.formState.errors.email && (
-                <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
+                <p id="create-client-email-error" className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
                   {createForm.formState.errors.email.message}
                 </p>
               )}
@@ -133,9 +146,16 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
             <label htmlFor="create-client-password" className="block text-[var(--text-sm)] text-[var(--color-text-secondary)] mb-[var(--space-1)]">
               Password
             </label>
-            <Input id="create-client-password" type="password" placeholder="Min 8 characters" {...createForm.register("password")} />
+            <Input
+              id="create-client-password"
+              type="password"
+              placeholder="Min 8 characters"
+              aria-invalid={!!createForm.formState.errors.password}
+              aria-describedby={createForm.formState.errors.password ? "create-client-password-error" : undefined}
+              {...createForm.register("password")}
+            />
             {createForm.formState.errors.password && (
-              <p className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
+              <p id="create-client-password-error" className="text-[var(--text-xs)] text-[var(--color-error)] mt-1">
                 {createForm.formState.errors.password.message}
               </p>
             )}
@@ -152,7 +172,14 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
           <div className="flex gap-[var(--space-3)]">
             <div className="flex-1">
               <label htmlFor="invite-email" className="sr-only">Email address</label>
-              <Input id="invite-email" type="email" placeholder="client@example.com" {...inviteForm.register("email")} />
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="client@example.com"
+                aria-invalid={!!inviteForm.formState.errors.email}
+                aria-describedby={inviteForm.formState.errors.email ? "invite-email-error" : undefined}
+                {...inviteForm.register("email")}
+              />
             </div>
             <Button type="submit" disabled={inviteForm.formState.isSubmitting}>
               <Send size={16} className="mr-1.5" />
@@ -160,7 +187,7 @@ export function InviteClientForm({ workspaceId }: { workspaceId: Id<"workspaces"
             </Button>
           </div>
           {inviteForm.formState.errors.email && (
-            <p className="text-[var(--text-xs)] text-[var(--color-error)]">
+            <p id="invite-email-error" className="text-[var(--text-xs)] text-[var(--color-error)]">
               {inviteForm.formState.errors.email.message}
             </p>
           )}

@@ -35,12 +35,12 @@ export function Modal({ open, onClose, children, className }: ModalProps) {
         const last = focusable[focusable.length - 1];
 
         if (e.shiftKey) {
-          if (document.activeElement === first) {
+          if (document.activeElement === first || document.activeElement === contentRef.current) {
             e.preventDefault();
             last.focus();
           }
         } else {
-          if (document.activeElement === last) {
+          if (document.activeElement === last || document.activeElement === contentRef.current) {
             e.preventDefault();
             first.focus();
           }

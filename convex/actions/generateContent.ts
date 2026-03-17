@@ -110,7 +110,7 @@ Output the content in markdown format. Do not include any preamble or meta-comme
             apiError?.error?.type === "timeout_error" ||
             apiError?.code === "ETIMEDOUT";
 
-          if (isRateLimit && attempt < MAX_RETRIES) {
+          if ((isRateLimit || isTimeout) && attempt < MAX_RETRIES) {
             const backoff = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
             await new Promise((r) => setTimeout(r, backoff));
             continue;
@@ -120,6 +120,10 @@ Output the content in markdown format. Do not include any preamble or meta-comme
             throw new Error(
               "Content generation is taking longer than expected. Please try again."
             );
+          }
+
+          if (isRateLimit) {
+            throw new Error("Content generation failed after multiple attempts. Please try again.");
           }
 
           // Don't expose raw API error details to the client

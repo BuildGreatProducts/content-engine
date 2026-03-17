@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2 } from "lucide-react";
-import Link from "next/link";
 
 function formatRelativeDate(ts: number): string {
   const now = new Date();
@@ -51,9 +50,9 @@ export function WorkspaceList() {
           <p className="text-[var(--color-text-secondary)] text-[var(--text-sm)]">
             No workspaces yet. Create your first workspace to get started.
           </p>
-          <Link href="/admin/workspaces/new">
-            <Button>Create Workspace</Button>
-          </Link>
+          <Button onClick={() => router.push("/admin/workspaces/new")}>
+            Create Workspace
+          </Button>
         </div>
       </Card>
     );

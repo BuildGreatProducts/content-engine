@@ -19,6 +19,12 @@ export default function DashboardPage() {
             <Skeleton key={i} className="h-[88px] w-full" />
           ))}
         </div>
+      ) : !workspace ? (
+        <div className="text-center py-12">
+          <p className="text-[var(--color-text-secondary)]">
+            No workspace assigned. Contact your admin to get access to a workspace.
+          </p>
+        </div>
       ) : (
         <ContentTypeGrid />
       )}
