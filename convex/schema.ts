@@ -77,7 +77,8 @@ export default defineSchema({
   })
     .index("by_workspace", ["workspaceId"])
     .index("by_workspace_and_type", ["workspaceId", "type"])
-    .index("by_workspace_chronological", ["workspaceId", "createdAt"]),
+    .index("by_workspace_chronological", ["workspaceId", "createdAt"])
+    .index("by_high_priority_review_status", ["isHighPriority", "reviewedByAdmin", "createdAt"]),
 
   // Invitations — pending client invitations
   invitations: defineTable({
